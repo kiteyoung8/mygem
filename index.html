@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>anyGem v41.2 : Semantic Memory</title>
+    <title>anyGem v39.0 : Presentation Evolution</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -11,8 +11,9 @@
         .animate-fade-in { animation: fadeInUp 0.5s ease-out forwards; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
-        #ppt-panel { transition: all 0.3s ease; max-height: 0; opacity: 0; overflow: hidden; }
-        #ppt-panel.active { max-height: 350px; opacity: 1; margin-top: 1rem; border: 1px solid rgba(16, 185, 129, 0.2); }
+        /* 簡報設定面板動畫 */
+        #ppt-config-panel { transition: all 0.3s ease; max-height: 0; opacity: 0; overflow: hidden; }
+        #ppt-config-panel.active { max-height: 300px; opacity: 1; margin-top: 1rem; }
     </style>
 </head>
 <body class="bg-[#020617] text-slate-300 h-screen flex flex-col font-sans overflow-hidden">
@@ -20,113 +21,82 @@
     <header class="p-4 border-b border-emerald-900/30 bg-[#0f172a] flex flex-col shadow-2xl z-50">
         <div class="flex justify-between items-center">
             <div class="flex flex-col">
-                <span class="text-lg font-black text-white italic tracking-tighter uppercase">anyGem <span class="text-emerald-500 text-sm">v41.2</span></span>
-                <span class="text-[8px] text-emerald-400 font-mono tracking-widest uppercase opacity-70">Semantic Memory Assistant</span>
+                <span class="text-lg font-black text-white italic tracking-tighter">anyGem <span class="text-emerald-500">v39.0</span></span>
+                <span class="text-[8px] text-emerald-400 font-mono tracking-widest uppercase opacity-70">Legacy Stable & AI Design</span>
             </div>
-            <select id="mode-select" onchange="updateUI()" class="bg-emerald-900/20 text-white text-xs py-2 px-3 rounded-xl border border-emerald-500/30 font-bold outline-none cursor-pointer">
-                <option value="chat">💬 高速對話 (學習模式)</option>
+            <select id="mode-select" onchange="updateModeUI()" class="bg-emerald-900/20 text-white text-xs py-2 px-3 rounded-xl border border-emerald-500/30 outline-none font-bold cursor-pointer">
+                <option value="chat">💬 高速對話</option>
                 <option value="search">🌍 深度研究</option>
-                <option value="drawing">🎨 藝術生圖 (高精度)</option>
+                <option value="drawing">🎨 藝術生圖</option>
                 <option value="presentation">📊 智能簡報</option>
-                <option value="calendar">📅 日曆管家</option>
             </select>
         </div>
 
-        <div id="ppt-panel" class="bg-emerald-900/10 rounded-2xl p-4 space-y-3">
-            <select id="ppt-strategy" class="bg-slate-800 text-white text-xs p-2 rounded-lg w-full outline-none">
-                <option value="hybrid" selected>1. 混合模式 (AI 背景 + 原生版面)</option>
-                <option value="native">2. 原生模式 (純 Google 版型)</option>
-                <option value="ai">3. AI 模式 (全頁生圖設計)</option>
-            </select>
-            <input type="text" id="ppt-style" class="bg-slate-800 text-white text-xs p-2 rounded-lg w-full outline-none" placeholder="自定義風格 (例如：莫蘭迪色、科技感...)">
+        <div id="ppt-config-panel" class="bg-emerald-900/10 border border-emerald-500/20 rounded-2xl p-4 space-y-3">
+            <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">生成策略</label>
+                <select id="ppt-strategy" class="bg-slate-800 text-white text-xs p-2 rounded-lg outline-none border border-white/10">
+                    <option value="native">🌿 原生幾何版面 (Google Native)</option>
+                    <option value="ai">✨ 純 AI 生圖設計 (Full AI Generation)</option>
+                    <option value="hybrid" selected>🌓 混合式設計 (Hybrid Design)</option>
+                </select>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">自定義風格描述</label>
+                <input type="text" id="ppt-style" class="bg-slate-800 text-white text-xs p-2 rounded-lg outline-none border border-white/10" placeholder="例如：莫蘭迪色調、科技感、水墨畫、極簡主義...">
+            </div>
         </div>
     </header>
 
-    <main id="chat-window" class="flex-grow p-4 overflow-y-auto space-y-6 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.05),transparent)]"></main>
-
-    <div id="file-preview-bar" class="hidden px-4 py-3 bg-emerald-900/20 border-t border-emerald-500/30 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-            <div id="file-thumb" class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-xl shadow-lg"></div>
-            <div class="flex flex-col">
-                <span id="file-name-label" class="text-xs font-bold text-white truncate max-w-[200px]">檔案載入中...</span>
-                <span class="text-[9px] text-emerald-400 font-mono tracking-widest uppercase">Content Ready</span>
-            </div>
-        </div>
-        <button onclick="clearFile()" class="p-2 text-slate-500 hover:text-white">✕</button>
-    </div>
+    <main id="chat-window" class="flex-grow p-4 overflow-y-auto space-y-6 scroll-smooth bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.05),transparent)]"></main>
 
     <footer class="p-3 bg-[#0f172a] border-t border-emerald-900/30 pb-8 md:pb-4 z-50">
         <div class="flex gap-2 items-center max-w-5xl mx-auto">
-            <input type="file" id="file-input" class="hidden" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx">
-            <button onclick="document.getElementById('file-input').click()" class="bg-slate-800 p-4 rounded-2xl hover:bg-emerald-900/40 active:scale-95 transition-all">
+            <input type="file" id="file-upload" class="hidden" accept="image/*">
+            <button onclick="document.getElementById('file-upload').click()" class="bg-slate-800 p-4 rounded-2xl hover:bg-emerald-900/40 active:scale-95 transition-all">
                 <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
             </button>
-            <input type="text" id="user-input" class="w-full bg-[#1e293b] border border-white/5 rounded-2xl px-5 py-4 text-white text-sm outline-none" placeholder="說點什麼，AI 會記住重要內容...">
-            <button onclick="handleSend()" id="send-btn" class="bg-emerald-600 text-white px-6 py-4 rounded-2xl font-black uppercase italic shadow-lg active:scale-95 transition-all">Send</button>
+            <input type="text" id="user-input" class="w-full bg-[#1e293b] border border-white/5 rounded-2xl px-5 py-4 text-white text-sm outline-none focus:border-emerald-500/50" placeholder="輸入主題或指令...">
+            <button onclick="handleSend()" id="send-btn" class="bg-emerald-600 text-white px-6 py-4 rounded-2xl font-black shadow-lg uppercase italic active:scale-95 transition-all">Send</button>
         </div>
     </footer>
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycby1S8mlI-XHKxaR3ZOthzdFBfac7MeiL6xaxlvORfJVoEQkR2jsfmA5piSpnUki9a3j/exec";
-
-        // ✨ 固化使用者 ID
-        const sessId = (function() {
-            let id = localStorage.getItem('ANYGEM_USER_ID');
-            if (!id) {
-                id = "UID_" + Math.random().toString(36).substr(2, 9).toUpperCase();
-                localStorage.setItem('ANYGEM_USER_ID', id);
-            }
-            return id;
-        })();
-
-        const chatWindow = document.getElementById('chat-window'), input = document.getElementById('user-input'), btn = document.getElementById('send-btn'), modeSelect = document.getElementById('mode-select'), pptPanel = document.getElementById('ppt-panel'), previewBar = document.getElementById('file-preview-bar');
+        const chatWindow = document.getElementById('chat-window'), input = document.getElementById('user-input'), btn = document.getElementById('send-btn'), modeSelect = document.getElementById('mode-select'), pptPanel = document.getElementById('ppt-config-panel'), sessId = "CLIP_" + Math.random().toString(36).substr(2, 6).toUpperCase();
         
         let activeFile = null;
 
-        function updateUI() {
-            modeSelect.value === 'presentation' ? pptPanel.classList.add('active') : pptPanel.classList.remove('active');
+        function updateModeUI() {
+            const m = modeSelect.value;
+            const themes = { chat: "bg-emerald-600", search: "bg-blue-600", drawing: "bg-pink-600", presentation: "bg-orange-600" };
+            btn.className = `${themes[m]} text-white px-6 py-4 rounded-2xl font-black active:scale-95 transition-all uppercase italic`;
+            
+            // 顯示/隱藏簡報面板
+            m === 'presentation' ? pptPanel.classList.add('active') : pptPanel.classList.remove('active');
         }
-
-        document.getElementById('file-input').onchange = async (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
-            setLoading(true, "Optimizing...");
-            activeFile = file.type.startsWith('image/') ? await compressImage(file) : file;
-            previewBar.classList.remove('hidden');
-            document.getElementById('file-name-label').innerText = file.name;
-            const thumb = document.getElementById('file-thumb');
-            if(file.type.startsWith('image/')) {
-                const url = URL.createObjectURL(file);
-                thumb.innerHTML = `<img src="${url}" class="w-full h-full object-cover rounded-lg">`;
-            } else {
-                thumb.innerHTML = file.name.includes('pdf') ? '📕' : (file.name.match(/\.(ppt|pptx)$/) ? '📙' : '📘');
-            }
-            setLoading(false);
-        };
-
-        function clearFile() { activeFile = null; document.getElementById('file-input').value = ''; previewBar.classList.add('hidden'); }
 
         async function handleSend() {
             const text = input.value.trim();
             if(!text && !activeFile) return;
-
-            addMessage('user', text, { fileName: activeFile?.name });
+            addMessage('user', text);
+            
             const payload = { 
                 message: text, session_id: sessId, mode: modeSelect.value,
-                options: { strategy: document.getElementById('ppt-strategy').value, style: document.getElementById('ppt-style').value }
+                options: {
+                    strategy: document.getElementById('ppt-strategy').value,
+                    style: document.getElementById('ppt-style').value
+                }
             };
-
-            const tempFile = activeFile;
             input.value = '';
-            clearFile();
-
-            if(tempFile) {
-                setLoading(true, "Encoding...");
-                payload.file_data = (await toBase64(tempFile)).split(',')[1];
-                payload.mime_type = tempFile.type;
+            
+            if(activeFile) {
+                payload.file_data = (await toBase64(activeFile)).split(',')[1];
+                payload.mime_type = activeFile.type;
+                activeFile = null;
             }
 
-            setLoading(true, "AI Processing...");
+            setLoading(true, "AI Working...");
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const data = await res.json();
@@ -136,56 +106,37 @@
             } catch (e) { addMessage('ai', "❌ 連線失敗"); } finally { setLoading(false); }
         }
 
+        // 訊息渲染與輔助功能 (維持 v20.4 的穩定邏輯)
         function addMessage(role, text, meta = null) {
             const wrapper = document.createElement('div');
             wrapper.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in mb-6 group`;
             const msgBox = document.createElement('div');
             msgBox.className = `max-w-[85%] p-4 rounded-2xl ${role === 'user' ? 'bg-emerald-700/80 text-white' : 'bg-[#1e293b] text-slate-200 border border-emerald-500/10'} shadow-xl relative prose prose-invert prose-sm`;
-            
-            if(role === 'user' && meta?.fileName) {
-                const badge = document.createElement('div');
-                badge.className = "mb-2 p-2 bg-black/20 rounded-lg flex items-center gap-2 text-[10px] font-mono border border-white/5";
-                badge.innerHTML = `<span>📄</span> <span class="truncate">${meta.fileName}</span>`;
-                msgBox.appendChild(badge);
-            }
-
-            if(meta?.image) {
+            if(meta && meta.image) {
                 const img = document.createElement('img');
                 img.src = `data:${meta.mime || 'image/png'};base64,${meta.image}`;
-                img.className = "w-full rounded-lg mb-3 shadow-lg border border-white/10";
+                img.className = "w-full rounded-lg mb-3 shadow-lg";
                 msgBox.appendChild(img);
             }
             if (text) {
-                const tNode = document.createElement('div'); tNode.innerHTML = marked.parse(text); msgBox.appendChild(tNode);
+                const tNode = document.createElement('div');
+                tNode.innerHTML = marked.parse(text);
+                msgBox.appendChild(tNode);
                 if (role === 'ai') {
-                    const cBtn = document.createElement('button');
-                    cBtn.className = "mt-4 text-[10px] bg-white/5 hover:bg-emerald-600 px-3 py-1 rounded-lg transition-all";
-                    cBtn.innerText = "📋 Copy Text";
-                    cBtn.onclick = () => { navigator.clipboard.writeText(text); cBtn.innerText = "✅ Done!"; setTimeout(()=>cBtn.innerText="📋 Copy Text", 2000); };
-                    msgBox.appendChild(cBtn);
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = "mt-4 text-[10px] bg-slate-700/50 hover:bg-emerald-600 text-slate-400 px-3 py-1 rounded-lg font-bold uppercase";
+                    copyBtn.innerText = "📋 Copy Text";
+                    copyBtn.onclick = () => { navigator.clipboard.writeText(text); copyBtn.innerText = "✅ Done!"; setTimeout(()=>copyBtn.innerText="📋 Copy Text", 2000); };
+                    msgBox.appendChild(copyBtn);
                 }
             }
             chatWindow.appendChild(wrapper); wrapper.appendChild(msgBox); chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
+        function setLoading(l, t) { btn.disabled = l; if(l){ const d = document.createElement('div'); d.id='loader'; d.className='text-emerald-500 text-[10px] font-black animate-pulse p-2'; d.innerText=`⚡ ${t.toUpperCase()}`; chatWindow.appendChild(d); } else { document.getElementById('loader')?.remove(); } }
         function toBase64(f) { return new Promise(r => { const rd = new FileReader(); rd.onload = () => r(rd.result); rd.readAsDataURL(f); }); }
-        
-        function compressImage(f) {
-            return new Promise(resolve => {
-                const img = new Image(); img.src = URL.createObjectURL(f);
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let w = img.width, h = img.height, max = 1200;
-                    if(w > h && w > max) { h *= max/w; w = max; } else if(h > max) { w *= max/h; h = max; }
-                    canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    canvas.toBlob(blob => resolve(new File([blob], f.name, {type: 'image/jpeg'})), 'image/jpeg', 0.85);
-                };
-            });
-        }
-
-        function setLoading(l, t) { btn.disabled = l; if(l){ const d = document.createElement('div'); d.id='loader'; d.className='text-emerald-500 text-[10px] font-black animate-pulse p-2'; d.innerText=`⚡ ${t.toUpperCase()}`; chatWindow.appendChild(d); chatWindow.scrollTop = chatWindow.scrollHeight; } else { document.getElementById('loader')?.remove(); } }
-        updateUI();
+        document.getElementById('file-upload').onchange = (e) => { if(e.target.files[0]) activeFile = e.target.files[0]; };
+        updateModeUI();
     </script>
 </body>
 </html>
