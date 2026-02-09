@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>anyGem v42.1 : Image Fixed</title>
+    <title>anyGem v42.5 : Force Paint</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -24,10 +24,10 @@
         <div class="max-w-5xl mx-auto flex justify-between items-center">
             <div class="flex flex-col">
                 <span class="text-xl font-black text-white italic tracking-tighter uppercase">
-                    anyGem <span class="text-emerald-500 text-sm">v42.1</span>
+                    anyGem <span class="text-emerald-500 text-sm">v42.5</span>
                 </span>
                 <span class="text-[9px] text-emerald-400 font-mono tracking-[0.2em] uppercase opacity-70">
-                    Image Generation Fixed
+                    Force Paint Edition
                 </span>
             </div>
             <select id="mode-select" onchange="updateUI()" class="bg-emerald-900/20 text-white text-xs py-2 px-4 rounded-2xl border border-emerald-500/30 font-bold outline-none cursor-pointer hover:bg-emerald-900/40 transition-all">
@@ -77,14 +77,14 @@
                 <svg class="w-6 h-6 text-emerald-400 group-hover:text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
             </button>
             <div class="flex-grow relative">
-                <textarea id="user-input" rows="1" class="w-full bg-[#1e293b] border border-white/10 rounded-2xl px-5 py-4 text-white text-sm outline-none focus:border-emerald-500/50 transition-all resize-none shadow-inner" placeholder="輸入訊息，我會記住您的偏好..."></textarea>
+                <textarea id="user-input" rows="1" class="w-full bg-[#1e293b] border border-white/10 rounded-2xl px-5 py-4 text-white text-sm outline-none focus:border-emerald-500/50 transition-all resize-none shadow-inner" placeholder="輸入訊息..."></textarea>
             </div>
             <button onclick="handleSend()" id="send-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-2xl font-black uppercase italic shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-95 transition-all">Send</button>
         </div>
     </footer>
 
     <script>
-        // ⚠️ 請填入您最新的 GAS 部署網址
+        // ⚠️ 請務必更新您的 GAS 網址！
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; 
 
         const sessId = (function() {
