@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>anyGem v42.0 : 2026 Flagship</title>
+    <title>anyGem v42.1 : Image Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -24,16 +24,16 @@
         <div class="max-w-5xl mx-auto flex justify-between items-center">
             <div class="flex flex-col">
                 <span class="text-xl font-black text-white italic tracking-tighter uppercase">
-                    anyGem <span class="text-emerald-500 text-sm">v42.0</span>
+                    anyGem <span class="text-emerald-500 text-sm">v42.1</span>
                 </span>
                 <span class="text-[9px] text-emerald-400 font-mono tracking-[0.2em] uppercase opacity-70">
-                    Gemini 3 + Nano Banana
+                    Image Generation Fixed
                 </span>
             </div>
             <select id="mode-select" onchange="updateUI()" class="bg-emerald-900/20 text-white text-xs py-2 px-4 rounded-2xl border border-emerald-500/30 font-bold outline-none cursor-pointer hover:bg-emerald-900/40 transition-all">
-                <option value="chat">💬 智能助理 (Gemini 3 Flash)</option>
+                <option value="chat">💬 智能助理 (Gemini 3)</option>
                 <option value="search">🌍 深度研究 (Deep Research)</option>
-                <option value="drawing">🎨 藝術生圖 (Nano Banana)</option>
+                <option value="drawing">🎨 藝術生圖 (Gemini 2.0 Imagen)</option>
                 <option value="presentation">📊 智能簡報 (Pro Architect)</option>
                 <option value="calendar">📅 日曆管家</option>
             </select>
@@ -64,7 +64,7 @@
             <div id="file-thumb" class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-2xl shadow-2xl border border-white/10 overflow-hidden"></div>
             <div class="flex flex-col">
                 <span id="file-name-label" class="text-xs font-bold text-white truncate max-w-[250px]">檔案名稱</span>
-                <span class="text-[9px] text-emerald-400 font-mono tracking-widest uppercase animate-pulse">Ready for Analysis</span>
+                <span class="text-[9px] text-emerald-400 font-mono tracking-widest uppercase animate-pulse">Ready</span>
             </div>
         </div>
         <button onclick="clearFile()" class="p-2 bg-white/5 hover:bg-red-500/20 rounded-full transition-all text-slate-400 hover:text-red-400">✕</button>
@@ -84,7 +84,8 @@
     </footer>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; // ⚠️ 請填入您的 GAS 網址
+        // ⚠️ 請填入您最新的 GAS 部署網址
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; 
 
         const sessId = (function() {
             let id = localStorage.getItem('ANYGEM_USER_ID');
