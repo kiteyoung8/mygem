@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>anyGem v45.1 : History Management</title>
+    <title>anyGem v46.0 : Ultimate Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -15,16 +15,14 @@
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
         
-        /* 側邊欄過渡 */
         .sidebar-transition { transition: transform 0.3s ease-in-out; }
         .glass { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         #ppt-panel { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); max-height: 0; opacity: 0; overflow: hidden; }
         #ppt-panel.active { max-height: 400px; opacity: 1; margin-top: 1rem; padding: 1rem; border: 1px solid rgba(16, 185, 129, 0.2); }
 
-        /* [新] 刪除按鈕：預設透明，hover 時顯示 */
+        /* 歷史紀錄與刪除按鈕 */
         .history-item .delete-btn { opacity: 0; transition: opacity 0.2s; }
         .history-item:hover .delete-btn { opacity: 1; }
-        /* 手機版一律顯示 */
         @media (max-width: 768px) { .history-item .delete-btn { opacity: 1; } }
     </style>
 </head>
@@ -42,7 +40,7 @@
         </div>
 
         <div class="p-4 border-t border-white/5 text-[10px] text-center text-slate-500">
-            anyGem v45.1<br>History Management
+            anyGem v46.0<br>Ultimate Edition
         </div>
     </aside>
 
@@ -58,7 +56,7 @@
                     </button>
                     <div class="flex flex-col">
                         <span class="text-lg font-black text-white italic tracking-tighter uppercase hidden sm:block">
-                            anyGem <span class="text-emerald-500 text-sm">v45.1</span>
+                            anyGem <span class="text-emerald-500 text-sm">v46.0</span>
                         </span>
                     </div>
                 </div>
@@ -66,7 +64,7 @@
                     <option value="chat">💬 智能助理</option>
                     <option value="search">🌍 深度研究 (對話)</option>
                     <option value="research_report">📝 深度研究報告</option>
-                    <option value="drawing">🎨 藝術生圖</option>
+                    <option value="drawing">🎨 藝術生圖 (圖生圖)</option>
                     <option value="presentation">📊 智能簡報</option>
                     <option value="calendar">📅 日曆管家</option>
                 </select>
@@ -134,13 +132,18 @@
         let activeFile = null;
 
         function updateUI() {
-            modeSelect.value === 'presentation' ? pptPanel.classList.add('active') : pptPanel.classList.remove('active');
+            const m = modeSelect.value;
+            m === 'presentation' ? pptPanel.classList.add('active') : pptPanel.classList.remove('active');
             input.focus();
+            
+            // 動態提示語
+            if(m === 'drawing') input.placeholder = "輸入描述，或上傳圖片並輸入修改指令...";
+            else if(m === 'research_report') input.placeholder = "輸入主題，生成 Google Doc 報告...";
+            else input.placeholder = "輸入訊息...";
         }
 
         function toggleSidebar() {
-            const sb = document.getElementById('sidebar');
-            const ol = document.getElementById('sidebar-overlay');
+            const sb = document.getElementById('sidebar'); const ol = document.getElementById('sidebar-overlay');
             if (sb.classList.contains('-translate-x-full')) { sb.classList.remove('-translate-x-full'); ol.classList.remove('hidden'); } 
             else { sb.classList.add('-translate-x-full'); ol.classList.add('hidden'); }
         }
@@ -173,7 +176,7 @@
                                 <i class="far fa-comment-dots opacity-50"></i>
                                 <span class="truncate">${s.title}</span>
                             </div>
-                            <button onclick="deleteChat('${s.id}', event)" class="delete-btn text-slate-500 hover:text-red-400 p-1 rounded hover:bg-white/10" title="刪除對話">
+                            <button onclick="deleteChat('${s.id}', event)" class="delete-btn text-slate-500 hover:text-red-400 p-1 rounded hover:bg-white/10" title="刪除">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         `;
@@ -183,20 +186,16 @@
             } catch (e) { console.error("History fetch failed", e); }
         }
 
-        // [新增] 刪除對話函式
         async function deleteChat(id, event) {
-            event.stopPropagation(); // 阻止冒泡，避免觸發載入
+            event.stopPropagation();
             if (!confirm("確定要永久刪除此對話紀錄嗎？")) return;
-
-            const btn = event.currentTarget;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; // Loading
-
+            const btn = event.currentTarget; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'delete_session', session_id: id }) });
                 const data = await res.json();
                 if (data.status === 'success') {
-                    if (id === sessId) newChat(); // 如果刪除的是當前對話，跳轉新對話
-                    else fetchHistoryList(); // 否則重新整理列表
+                    if (id === sessId) newChat(); 
+                    else fetchHistoryList(); 
                 } else { alert("刪除失敗: " + data.message); }
             } catch (e) { alert("連線錯誤"); fetchHistoryList(); }
         }
@@ -216,7 +215,6 @@
             } catch (e) { chatWindow.innerHTML = '<div class="text-center text-red-400 text-xs">載入失敗</div>'; }
         }
 
-        // --- 發送與輔助 ---
         input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
 
         async function handleSend() {
@@ -261,7 +259,8 @@
         function compressImage(f) { return new Promise(resolve => { const img = new Image(); img.src = URL.createObjectURL(f); img.onload = () => { const canvas = document.createElement('canvas'); let w = img.width, h = img.height, max = 1200; if(w > h && w > max) { h *= max/w; w = max; } else if(h > max) { w *= max/h; h = max; } canvas.width = w; canvas.height = h; canvas.getContext('2d').drawImage(img, 0, 0, w, h); canvas.toBlob(blob => resolve(new File([blob], f.name, {type: 'image/jpeg'})), 'image/jpeg', 0.85); }; }); }
         function setLoading(l, t) { btn.disabled = l; if(l) { const d = document.createElement('div'); d.id = 'loader'; d.className = 'flex items-center gap-2 text-emerald-500 text-[10px] font-black animate-pulse p-2'; d.innerHTML = `⚡ ${t.toUpperCase()}`; chatWindow.appendChild(d); chatWindow.scrollTop = chatWindow.scrollHeight; } else { document.getElementById('loader')?.remove(); } }
         
-        fetchHistoryList(); // Start
+        updateUI(); // Set initial placeholders
+        fetchHistoryList(); // Start history
     </script>
 </body>
 </html>
