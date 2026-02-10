@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>anyGem v43.1 : Full Restore</title>
+    <title>anyGem v44.0 : Research Doc</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -24,15 +24,16 @@
         <div class="max-w-5xl mx-auto flex justify-between items-center">
             <div class="flex flex-col">
                 <span class="text-xl font-black text-white italic tracking-tighter uppercase">
-                    anyGem <span class="text-emerald-500 text-sm">v43.1</span>
+                    anyGem <span class="text-emerald-500 text-sm">v44.0</span>
                 </span>
                 <span class="text-[9px] text-emerald-400 font-mono tracking-[0.2em] uppercase opacity-70">
-                    Full Restore
+                    Research Doc Architect
                 </span>
             </div>
             <select id="mode-select" onchange="updateUI()" class="bg-emerald-900/20 text-white text-xs py-2 px-4 rounded-2xl border border-emerald-500/30 font-bold outline-none cursor-pointer hover:bg-emerald-900/40 transition-all">
                 <option value="chat">💬 智能助理</option>
-                <option value="search">🌍 深度研究</option>
+                <option value="search">🌍 深度研究 (對話)</option>
+                <option value="research_report">📝 深度研究報告 (Google Doc)</option>
                 <option value="drawing">🎨 藝術生圖</option>
                 <option value="presentation">📊 智能簡報</option>
                 <option value="calendar">📅 日曆管家</option>
@@ -115,8 +116,10 @@
             if(file.type.startsWith('image/')) {
                 const url = URL.createObjectURL(activeFile);
                 thumb.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
+            } else if (file.type === 'application/pdf') {
+                thumb.innerHTML = `<span class="text-[10px] font-black text-red-400">PDF</span>`;
             } else {
-                thumb.innerHTML = `<span class="text-[10px] font-black text-emerald-400">${file.name.split('.').pop().toUpperCase()}</span>`;
+                thumb.innerHTML = `<span class="text-[10px] font-black text-emerald-400">DOC</span>`;
             }
             setLoading(false);
         };
@@ -130,7 +133,6 @@
             
             const payload = { 
                 message: text, session_id: sessId, mode: modeSelect.value,
-                // 恢復 Style 選項傳送
                 options: { 
                     strategy: document.getElementById('ppt-strategy').value, 
                     style: document.getElementById('ppt-style').value 
@@ -146,7 +148,7 @@
                 payload.mime_type = tempFile.type || 'application/octet-stream';
             }
 
-            setLoading(true, "AI Thinking...");
+            setLoading(true, "AI Working...");
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const data = await res.json();
