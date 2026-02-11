@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>anyGem v47.1 : Streamlined Edition</title>
+    <title>anyGem v47.2 : Custom Page Count</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -39,7 +39,7 @@
         </div>
 
         <div class="p-4 border-t border-white/5 text-[10px] text-center text-slate-500">
-            anyGem v47.1<br>Streamlined Edition
+            anyGem v47.2<br>Custom Page Count
         </div>
     </aside>
 
@@ -55,14 +55,14 @@
                     </button>
                     <div class="flex flex-col">
                         <span class="text-lg font-black text-white italic tracking-tighter uppercase hidden sm:block">
-                            anyGem <span class="text-emerald-500 text-sm">v47.1</span>
+                            anyGem <span class="text-emerald-500 text-sm">v47.2</span>
                         </span>
                     </div>
                 </div>
                 <select id="mode-select" onchange="updateUI()" class="bg-emerald-900/20 text-white text-xs py-2 px-3 rounded-xl border border-emerald-500/30 font-bold outline-none cursor-pointer hover:bg-emerald-900/40 transition-all max-w-[150px] sm:max-w-none truncate">
-                    <option value="chat">💬 智能助理</option>
+                    <option value="chat">💬 智能助理 (聯網)</option>
                     <option value="search">🌍 深度研究 (Deep Think)</option>
-                    <option value="research_report">📝 深度研究報告</option>
+                    <option value="research_report">📝 深度研究報告 (聯網)</option>
                     <option value="drawing">🎨 藝術生圖 (Nano Banana)</option>
                     <option value="presentation">📊 智能簡報</option>
                     <option value="calendar">📅 日曆管家</option>
@@ -72,14 +72,10 @@
             <div id="ppt-panel" class="max-w-5xl mx-auto bg-emerald-900/10 rounded-3xl space-y-4 mt-2">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-1">頁數規劃</label>
-                        <select id="ppt-length" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5 outline-none cursor-pointer hover:bg-slate-700 transition-all">
-                            <option value="3">⚡ 3 頁 (精簡摘要)</option>
-                            <option value="5" selected>📝 5 頁 (標準結構)</option>
-                            <option value="8">📚 8 頁 (詳細內容)</option>
-                            <option value="10">🔥 10 頁 (完整報告)</option>
-                        </select>
+                        <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-1">頁數規劃 (3-20)</label>
+                        <input type="number" id="ppt-length" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5 outline-none focus:border-emerald-500/50 transition-all" value="5" min="3" max="20" placeholder="例如：8">
                     </div>
+
                     <div class="flex flex-col gap-1">
                         <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-1">生成策略</label>
                         <select id="ppt-strategy" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5 outline-none cursor-pointer hover:bg-slate-700 transition-all">
@@ -88,6 +84,7 @@
                             <option value="ai">✨ AI 模式</option>
                         </select>
                     </div>
+
                     <div class="flex flex-col gap-1">
                         <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-1">風格設定</label>
                         <input type="text" id="ppt-style" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5 outline-none focus:border-emerald-500/50 transition-all" placeholder="例如：極簡、科技藍...">
@@ -146,6 +143,7 @@
             
             if(m === 'drawing') input.placeholder = "輸入描述，或上傳圖片並輸入修改指令...";
             else if(m === 'research_report') input.placeholder = "輸入主題，生成 Google Doc 報告...";
+            else if(m === 'chat') input.placeholder = "輸入問題 (支援聯網查詢)...";
             else input.placeholder = "輸入訊息...";
         }
 
@@ -222,6 +220,7 @@
             const text = input.value.trim(); if(!text && !activeFile) return;
             addMessage('user', text, { fileName: activeFile?.name });
             
+            // 🚀 頁數現在是手動輸入，傳送給後端
             const payload = { 
                 message: text, 
                 session_id: sessId, 
