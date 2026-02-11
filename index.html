@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>anyGem v47.0 : Ultimate Edition</title>
+    <title>anyGem v47.1 : Streamlined Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -39,7 +39,7 @@
         </div>
 
         <div class="p-4 border-t border-white/5 text-[10px] text-center text-slate-500">
-            anyGem v47.0<br>Ultimate Edition
+            anyGem v47.1<br>Streamlined Edition
         </div>
     </aside>
 
@@ -55,7 +55,7 @@
                     </button>
                     <div class="flex flex-col">
                         <span class="text-lg font-black text-white italic tracking-tighter uppercase hidden sm:block">
-                            anyGem <span class="text-emerald-500 text-sm">v47.0</span>
+                            anyGem <span class="text-emerald-500 text-sm">v47.1</span>
                         </span>
                     </div>
                 </div>
@@ -64,7 +64,7 @@
                     <option value="search">🌍 深度研究 (Deep Think)</option>
                     <option value="research_report">📝 深度研究報告</option>
                     <option value="drawing">🎨 藝術生圖 (Nano Banana)</option>
-                    <option value="video">🎥 影片生成 (Veo)</option> <option value="presentation">📊 智能簡報</option>
+                    <option value="presentation">📊 智能簡報</option>
                     <option value="calendar">📅 日曆管家</option>
                 </select>
             </div>
@@ -144,9 +144,7 @@
             m === 'presentation' ? pptPanel.classList.add('active') : pptPanel.classList.remove('active');
             input.focus();
             
-            // 🔥 新增 video 模式的提示
             if(m === 'drawing') input.placeholder = "輸入描述，或上傳圖片並輸入修改指令...";
-            else if(m === 'video') input.placeholder = "輸入影片描述 (例如：A cinematic drone shot of Taipei 101 at night)..."; 
             else if(m === 'research_report') input.placeholder = "輸入主題，生成 Google Doc 報告...";
             else input.placeholder = "輸入訊息...";
         }
@@ -212,16 +210,7 @@
                 const data = await res.json();
                 if (data.status === 'success') {
                     chatWindow.innerHTML = ''; 
-                    data.logs.forEach(log => { 
-                        // 🔥 處理影片回傳
-                        if (log.meta?.mime?.startsWith('video')) {
-                            // 歷史紀錄中的影片 (如果是 Base64 會很大，通常建議存連結，這裡示範 Base64)
-                            // 注意：localStorage 或 Sheet 存大檔會有極限，建議影片模式不存入歷史或僅存文字
-                            addMessage('ai', log.text, log.meta);
-                        } else {
-                            addMessage(log.role === 'user' ? 'user' : 'ai', log.text, log.meta);
-                        }
-                    });
+                    data.logs.forEach(log => { addMessage(log.role === 'user' ? 'user' : 'ai', log.text, log.meta); });
                     fetchHistoryList(); 
                 }
             } catch (e) { chatWindow.innerHTML = '<div class="text-center text-red-400 text-xs">載入失敗</div>'; }
@@ -250,15 +239,7 @@
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const data = await res.json();
-                if(data.status === "success") { 
-                    // 🔥 處理影片
-                    if (data.video) {
-                        addMessage('ai', data.reply, { video: data.video, mime: data.mime });
-                    } else {
-                        addMessage('ai', data.reply, { model: data.model, image: data.image, mime: data.mime }); 
-                    }
-                    setTimeout(fetchHistoryList, 1500); 
-                } 
+                if(data.status === "success") { addMessage('ai', data.reply, { model: data.model, image: data.image, mime: data.mime }); setTimeout(fetchHistoryList, 1500); } 
                 else { addMessage('ai', "🚨 " + data.error); }
             } catch (e) { addMessage('ai', "❌ 連線失敗"); } finally { setLoading(false); }
         }
@@ -277,27 +258,11 @@
         };
 
         function clearFile() { activeFile = null; document.getElementById('file-input').value = ''; previewBar.classList.add('hidden'); }
-        
         function addMessage(role, text, meta = null) {
             const wrapper = document.createElement('div'); wrapper.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in mb-6`;
             const msgBox = document.createElement('div'); msgBox.className = `max-w-[85%] p-4 rounded-2xl shadow-xl relative ${role === 'user' ? 'bg-emerald-700 text-white rounded-tr-none' : 'bg-[#1e293b] text-slate-200 border border-emerald-500/10 rounded-tl-none'}`;
             if(role === 'user' && meta?.fileName) { const badge = document.createElement('div'); badge.className = "mb-2 p-2 bg-black/20 rounded-lg flex items-center gap-2 text-[10px] font-mono border border-white/5"; badge.innerHTML = `<i class="fas fa-paperclip"></i> <span class="truncate">${meta.fileName}</span>`; msgBox.appendChild(badge); }
-            
-            // 🔥 圖片渲染
-            if(meta?.image) { 
-                const img = document.createElement('img'); img.src = `data:${meta.mime || 'image/png'};base64,${meta.image}`; img.className = "w-full rounded-xl mb-3 shadow-lg"; msgBox.appendChild(img); 
-            }
-            // 🔥 影片渲染 (新增)
-            if(meta?.video) {
-                const vid = document.createElement('video');
-                vid.src = `data:${meta.mime || 'video/mp4'};base64,${meta.video}`;
-                vid.className = "w-full rounded-xl mb-3 shadow-lg";
-                vid.controls = true;
-                vid.autoplay = true;
-                vid.loop = true;
-                msgBox.appendChild(vid);
-            }
-
+            if(meta?.image) { const img = document.createElement('img'); img.src = `data:${meta.mime || 'image/png'};base64,${meta.image}`; img.className = "w-full rounded-xl mb-3 shadow-lg"; msgBox.appendChild(img); }
             if (text) { const tNode = document.createElement('div'); tNode.className = "prose prose-invert prose-sm max-w-none"; tNode.innerHTML = marked.parse(text); msgBox.appendChild(tNode); 
             if (role === 'ai') { const cBtn = document.createElement('button'); cBtn.className = "mt-4 text-[9px] font-bold bg-white/5 hover:bg-emerald-600 px-3 py-1.5 rounded-lg transition-all"; cBtn.innerHTML = "📋 複製"; cBtn.onclick = () => { navigator.clipboard.writeText(text); cBtn.innerHTML = "✅"; setTimeout(() => cBtn.innerHTML = "📋 複製", 2000); }; msgBox.appendChild(cBtn); } }
             wrapper.appendChild(msgBox); chatWindow.appendChild(wrapper); chatWindow.scrollTop = chatWindow.scrollHeight;
