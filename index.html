@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>anyGem v50.1 : Ultimate Edition</title>
+    <title>anyGem v51.0 : Adaptive Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -38,7 +38,7 @@
             <div class="text-center text-xs text-slate-500 mt-4 animate-pulse">載入紀錄中...</div>
         </div>
         <div class="p-4 border-t border-white/5 text-[10px] text-center text-slate-500 font-mono tracking-widest">
-            ANYGEM v50.1 ULTIMATE
+            ANYGEM v51.0 ADAPTIVE
         </div>
     </aside>
 
@@ -51,14 +51,14 @@
                 <div class="flex items-center gap-3">
                     <button onclick="toggleSidebar()" class="md:hidden text-white p-2 hover:bg-white/10 rounded-lg transition-all"><i class="fas fa-bars text-xl"></i></button>
                     <div class="flex flex-col">
-                        <span class="text-lg font-black text-white italic tracking-tighter uppercase hidden sm:block">anyGem <span class="text-emerald-500 text-sm font-bold">v50.1</span></span>
+                        <span class="text-lg font-black text-white italic tracking-tighter uppercase hidden sm:block">anyGem <span class="text-emerald-500 text-sm font-bold">v51.0</span></span>
                     </div>
                 </div>
                 <select id="mode-select" onchange="updateUI()" class="bg-emerald-900/20 text-white text-xs py-2 px-3 rounded-xl border border-emerald-500/30 font-bold outline-none cursor-pointer hover:bg-emerald-900/40 transition-all max-w-[150px] sm:max-w-none">
                     <option value="chat">💬 智能助理 (Fast)</option>
                     <option value="search">🌍 深度研究 (Agentic PM)</option>
                     <option value="drawing">🎨 藝術生圖 (Composer)</option>
-                    <option value="presentation">📊 智能簡報 (SlideGen)</option>
+                    <option value="presentation">📊 智能簡報 (Adaptive)</option>
                 </select>
             </div>
 
@@ -74,11 +74,19 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="flex flex-col gap-1">
                         <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-1">頁數規劃 (3-20)</label>
-                        <input type="number" id="ppt-length" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5" value="5" min="3" max="20">
+                        <input type="number" id="ppt-length" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5 outline-none focus:border-emerald-500/50" value="5" min="3" max="20">
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-1">風格設定</label>
-                        <input type="text" id="ppt-style" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5" placeholder="例如：極簡、商務藍">
+                        <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-1">視覺風格</label>
+                        <input type="text" id="ppt-style" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5 outline-none focus:border-emerald-500/50" placeholder="例如：極簡、Cyberpunk、科技藍">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-1">排版策略</label>
+                        <select id="ppt-strategy" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5 outline-none cursor-pointer hover:bg-slate-700 transition-all">
+                            <option value="balanced" selected>⚖️ 智慧平衡 (推薦)</option>
+                            <option value="visual">🎨 視覺優先 (多圖)</option>
+                            <option value="text">📄 資訊優先 (多文字)</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -196,11 +204,13 @@
             const m = modeSelect.value;
             addMessage('user', text, { fileName: activeFile?.name });
 
+            // v51.0: Updated Payload Construction
             const payload = {
                 message: text, session_id: sessId, mode: m,
                 options: { 
                     style: document.getElementById('ppt-style').value, 
                     length: document.getElementById('ppt-length').value,
+                    strategy: document.getElementById('ppt-strategy')?.value || "balanced", // 新增: 策略參數
                     create_report: document.getElementById('create-report-check').checked 
                 }
             };
