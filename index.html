@@ -4,117 +4,326 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>anyGem v53.1 : The Ultimate Consultant</title>
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-    <script src="[https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js](https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js)"></script>
-    <link href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css)" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
     <style>
-        body { background-color: #020617; color: #cbd5e1; font-family: sans-serif; margin: 0; overflow: hidden; }
-        .glass { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeInUp 0.3s ease-out forwards; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 3px; }
-        #search-options, #ppt-panel { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); max-height: 0; opacity: 0; overflow: hidden; }
-        #search-options.active, #ppt-panel.active { max-height: 600px; opacity: 1; margin-top: 1rem; padding: 1rem; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 1rem; background: rgba(16, 185, 129, 0.05); }
-        .sidebar-transition { transition: transform 0.3s ease-in-out; }
+        :root { --bg-dark: #020617; --bg-panel: #1e293b; --accent: #10b981; --text: #e2e8f0; }
+        body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-dark); color: var(--text); overflow: hidden; display: flex; height: 100vh; width: 100vw; }
+        
+        /* 側邊欄 */
+        #sidebar { width: 260px; background-color: #0f172a; border-right: 1px solid #1e293b; display: flex; flex-direction: column; z-index: 50; transition: transform 0.3s; }
+        @media (max-width: 768px) { #sidebar { position: fixed; height: 100%; transform: translateX(-100%); } #sidebar.open { transform: translateX(0); } }
+        
+        /* 主內容區 */
+        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; height: 100%; width: 100%; }
+        
+        /* 通用元件 */
+        .glass { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 15px; }
+        .btn-primary { background-color: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center; }
+        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: 0.5; cursor: wait; }
+        
+        select, input[type="text"], input[type="number"], textarea { background: #334155; color: white; border: 1px solid #475569; padding: 8px; border-radius: 6px; outline: none; width: 100%; box-sizing: border-box; }
+        select:focus, input:focus, textarea:focus { border-color: var(--accent); }
+        
+        /* 控制面板 */
+        #top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        #search-options, #ppt-panel { background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 15px; margin-top: 10px; display: none; }
+        #search-options.active, #ppt-panel.active { display: block; animation: slideDown 0.3s ease-out; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* 聊天視窗 */
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; padding-bottom: 80px; }
+        .msg-row { display: flex; margin-bottom: 20px; }
+        .msg-row.user { justify-content: flex-end; }
+        .msg-bubble { max-width: 80%; padding: 15px; border-radius: 12px; line-height: 1.6; font-size: 14px; position: relative; }
+        .msg-row.user .msg-bubble { background-color: #047857; color: white; border-top-right-radius: 2px; }
+        .msg-row.ai .msg-bubble { background-color: var(--bg-panel); border: 1px solid #334155; border-top-left-radius: 2px; }
+        .msg-bubble img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
+        
+        /* 底部輸入區 */
+        footer { padding: 15px; background: rgba(2, 6, 23, 0.95); border-top: 1px solid #1e293b; position: absolute; bottom: 0; width: 100%; display: flex; gap: 10px; align-items: flex-end; }
+        
+        /* 網格系統 */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        @media (max-width: 640px) { .grid-2, .grid-4 { grid-template-columns: 1fr; } }
+        
+        /* 載入動畫 */
+        .loader { text-align: center; color: var(--accent); font-size: 12px; font-weight: bold; margin: 10px 0; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        /* 歷史紀錄列表 */
+        .history-item { padding: 10px; cursor: pointer; border-radius: 6px; font-size: 13px; color: #94a3b8; display: flex; justify-content: space-between; }
+        .history-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .history-item.active { background: rgba(16, 185, 129, 0.2); color: var(--accent); }
     </style>
 </head>
-<body class="h-screen flex w-full">
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0f172a] border-r border-emerald-900/30 transform -translate-x-full md:translate-x-0 sidebar-transition flex flex-col shadow-2xl">
-        <div class="p-4 border-b border-white/5"><button onclick="newChat()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95"><i class="fas fa-plus"></i> 新增對話</button></div>
-        <div class="flex-grow overflow-y-auto p-3 space-y-2" id="history-list"><div class="text-center text-xs text-slate-600 mt-4">載入中...</div></div>
-        <div class="p-4 border-t border-white/5 text-[10px] text-center text-slate-500 font-mono uppercase tracking-widest">anyGem v53.1 Ultimate</div>
+<body>
+
+    <aside id="sidebar">
+        <div style="padding: 20px; border-bottom: 1px solid #1e293b;">
+            <button onclick="newChat()" class="btn-primary" style="width: 100%;">
+                <i class="fas fa-plus"></i> 新增對話
+            </button>
+        </div>
+        <div id="history-list" style="flex: 1; overflow-y: auto; padding: 10px;">
+            <div style="text-align: center; font-size: 12px; color: #64748b; margin-top: 20px;">載入紀錄中...</div>
+        </div>
+        <div style="padding: 15px; text-align: center; font-size: 10px; color: #475569; border-top: 1px solid #1e293b;">
+            ANYGEM V53.1 ULTIMATE
+        </div>
     </aside>
-    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm"></div>
-    <div class="flex-1 flex flex-col h-full relative md:ml-64 w-full bg-[#020617]">
-        <header class="p-4 glass sticky top-0 z-40 shadow-xl">
-            <div class="max-w-6xl mx-auto flex justify-between items-center mb-2">
-                <div class="flex items-center gap-3"><button onclick="toggleSidebar()" class="md:hidden text-white p-2 hover:bg-white/10 rounded-lg"><i class="fas fa-bars text-xl"></i></button><span class="text-xl font-black text-white italic tracking-tighter uppercase">anyGem <span class="text-emerald-500 text-sm">v53.1</span></span></div>
-                <select id="mode-select" onchange="updateUI()" class="bg-emerald-900/20 text-white text-xs py-2 px-3 rounded-xl border border-emerald-500/30 font-bold outline-none cursor-pointer hover:bg-emerald-900/40 transition-colors">
+
+    <div id="overlay" onclick="toggleSidebar()" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:40;display:none;"></div>
+
+    <div class="main-content">
+        <header class="glass">
+            <div id="top-bar">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;" class="md:hidden"><i class="fas fa-bars"></i></button>
+                    <span style="font-weight:900; font-style:italic; font-size:18px;">anyGem <span style="color:var(--accent); font-size:12px;">v53.1</span></span>
+                </div>
+                <select id="mode-select" onchange="updateUI()" style="width: auto; font-size: 12px; font-weight: bold;">
                     <option value="chat">💬 智能助理</option>
                     <option value="search">🌍 深度研究 (顧問模式)</option>
                     <option value="presentation">📊 智能簡報 (Gamma 模式)</option>
                     <option value="drawing">🎨 藝術生圖</option>
                 </select>
             </div>
-            <div id="search-options" class="max-w-6xl mx-auto">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                    <div class="flex items-center gap-3 bg-slate-900/80 p-3 rounded-xl border border-white/10 hover:border-emerald-500/50 transition-colors"><input type="checkbox" id="create-report-check" class="w-4 h-4 accent-emerald-500" checked><label for="create-report-check" class="text-xs font-bold text-white cursor-pointer select-none">📝 生成專業研報 (Doc)</label></div>
-                    <div class="flex items-center gap-3 bg-slate-900/80 p-3 rounded-xl border border-white/10 hover:border-emerald-500/50 transition-colors"><input type="checkbox" id="create-ppt-check" class="w-4 h-4 accent-emerald-500"><label for="create-ppt-check" class="text-xs font-bold text-white cursor-pointer select-none">📊 生成智能簡報 (Slides)</label></div>
+
+            <div id="search-options">
+                <div class="grid-2" style="margin-bottom: 10px;">
+                    <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" id="create-report-check" checked style="width:16px; height:16px;">
+                        <label for="create-report-check" style="font-size:12px; cursor:pointer;">📝 生成專業研報 (Doc)</label>
+                    </div>
+                    <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" id="create-ppt-check" style="width:16px; height:16px;">
+                        <label for="create-ppt-check" style="font-size:12px; cursor:pointer;">📊 生成智能簡報 (Slides)</label>
+                    </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-1"><label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">風格指令</label><input type="text" id="consult-style" class="bg-slate-800 border-b border-white/10 text-white text-xs p-2 rounded-lg outline-none focus:border-emerald-500 transition-colors" placeholder="如: 科技藍, 溫暖橘..."></div>
-                    <div class="flex flex-col gap-1"><label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">預計頁數</label><input type="number" id="consult-length" class="bg-slate-800 border-b border-white/10 text-white text-xs p-2 rounded-lg outline-none focus:border-emerald-500 transition-colors" value="6"></div>
+                <div class="grid-2">
+                    <div>
+                        <label style="font-size:9px; color:#10b981; font-weight:bold; display:block; margin-bottom:4px;">風格指令</label>
+                        <input type="text" id="consult-style" placeholder="如: 科技藍, 溫暖橘...">
+                    </div>
+                    <div>
+                        <label style="font-size:9px; color:#10b981; font-weight:bold; display:block; margin-bottom:4px;">預計頁數</label>
+                        <input type="number" id="consult-length" value="6">
+                    </div>
                 </div>
             </div>
-            <div id="ppt-panel" class="max-w-6xl mx-auto">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div class="flex flex-col gap-1"><label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">頁數</label><input type="number" id="ppt-length" class="bg-slate-800 border border-white/10 text-white text-xs p-2 rounded-lg outline-none focus:border-emerald-500" value="6" min="3" max="20"></div>
-                    <div class="flex flex-col gap-1"><label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">深度</label><select id="ppt-density" class="bg-slate-800 border border-white/10 text-white text-xs p-2 rounded-lg outline-none"><option value="detailed">📚 詳細解說</option><option value="brief">⚡ 精簡大綱</option></select></div>
-                    <div class="flex flex-col gap-1"><label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">主題</label><select id="ppt-theme" class="bg-slate-800 border border-white/10 text-white text-xs p-2 rounded-lg outline-none"><option value="modern_blue">🔵 科技深藍</option><option value="warm_orange">🟠 溫暖活力</option><option value="forest_green">🟢 永續森林</option><option value="dark_cyber">⚫ 暗黑模式</option></select></div>
-                    <div class="flex flex-col gap-1 justify-end"><div class="flex items-center gap-2 p-2 bg-slate-800 rounded-lg border border-white/10 h-[34px]"><input type="checkbox" id="ppt-ai-img" class="w-4 h-4 accent-emerald-500" checked><label for="ppt-ai-img" class="text-[10px] text-slate-300 cursor-pointer select-none">AI 配圖</label></div></div>
+
+            <div id="ppt-panel">
+                <div class="grid-4">
+                    <div>
+                        <label style="font-size:9px; color:#10b981; font-weight:bold; display:block; margin-bottom:4px;">頁數</label>
+                        <input type="number" id="ppt-length" value="6" min="3" max="20">
+                    </div>
+                    <div>
+                        <label style="font-size:9px; color:#10b981; font-weight:bold; display:block; margin-bottom:4px;">深度</label>
+                        <select id="ppt-density"><option value="detailed">📚 詳細解說</option><option value="brief">⚡ 精簡大綱</option></select>
+                    </div>
+                    <div>
+                        <label style="font-size:9px; color:#10b981; font-weight:bold; display:block; margin-bottom:4px;">主題</label>
+                        <select id="ppt-theme">
+                            <option value="modern_blue">🔵 科技深藍</option>
+                            <option value="warm_orange">🟠 溫暖活力</option>
+                            <option value="forest_green">🟢 永續森林</option>
+                            <option value="dark_cyber">⚫ 暗黑模式</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; align-items:flex-end;">
+                        <div style="background:#0f172a; padding:8px; border-radius:6px; display:flex; align-items:center; gap:8px; width:100%; height: 35px;">
+                            <input type="checkbox" id="ppt-ai-img" checked style="width:14px; height:14px;">
+                            <label for="ppt-ai-img" style="font-size:11px;">AI 配圖</label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
-        <main id="chat-window" class="flex-grow p-4 overflow-y-auto space-y-6 scroll-smooth pb-32 w-full">
-            <div class="flex justify-start animate-fade-in"><div class="max-w-[85%] p-4 rounded-2xl bg-[#1e293b] text-slate-200 border border-emerald-500/10 rounded-tl-none shadow-xl"><div class="prose prose-invert prose-sm">👋 嗨！我是 <b>anyGem v53.1</b>。<br>請選擇上方模式開始：<br>🌍 <b>深度研究</b>：我會像顧問一樣引導您。<br>📊 <b>智能簡報</b>：貼上文章，我幫您做 PPT。<br>🎨 <b>藝術生圖</b>：幫您畫出高品質素材。</div></div></div>
-        </main>
-        <div id="file-preview-bar" class="hidden absolute bottom-24 left-4 right-4 md:left-10 md:right-10 px-4 py-2 glass rounded-2xl border border-emerald-500/30 animate-fade-in flex items-center justify-between z-20">
-            <div class="flex items-center space-x-3"><div id="file-thumb" class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-white/10 overflow-hidden text-emerald-500"></div><div class="flex flex-col"><span id="file-name-label" class="text-xs font-bold text-white truncate max-w-[150px]">檔案已就緒</span><span class="text-[9px] text-emerald-400 font-mono tracking-widest uppercase animate-pulse">Ready to Analyze</span></div></div>
-            <button onclick="clearFile()" class="p-1 bg-white/5 rounded-full text-slate-400 hover:text-red-400 transition-colors"><i class="fas fa-times"></i></button>
-        </div>
-        <footer class="p-4 glass border-t border-emerald-900/30 z-30 absolute bottom-0 w-full">
-            <div class="max-w-6xl mx-auto flex gap-2 items-end">
-                <input type="file" id="file-input" class="hidden">
-                <button onclick="document.getElementById('file-input').click()" class="bg-slate-800 p-4 rounded-2xl hover:bg-emerald-600/20 active:scale-90 transition-all group border border-white/5"><i class="fas fa-paperclip text-emerald-400 group-hover:text-emerald-300 text-lg"></i></button>
-                <div class="flex-grow"><textarea id="user-input" rows="1" class="w-full bg-[#1e293b] rounded-2xl px-5 py-4 text-white text-sm outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none border border-white/5 placeholder-slate-500" placeholder="輸入訊息..."></textarea></div>
-                <button onclick="handleSend()" id="send-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-4 rounded-2xl font-black uppercase shadow-lg active:scale-95 transition-all flex items-center gap-2"><span>SEND</span> <i class="fas fa-paper-plane text-xs"></i></button>
+
+        <main id="chat-window">
+            <div class="msg-row ai">
+                <div class="msg-bubble">
+                    👋 嗨！我是 <b>anyGem v53.1</b> (Safe Mode)。<br>
+                    請選擇上方模式開始：<br>
+                    🌍 <b>深度研究</b>：我會像顧問一樣引導您。<br>
+                    📊 <b>智能簡報</b>：貼上文章，我幫您做 PPT。<br>
+                    🎨 <b>藝術生圖</b>：幫您畫出高品質素材。
+                </div>
             </div>
+        </main>
+
+        <div id="file-preview-bar" style="display:none; position:absolute; bottom:90px; left:20px; right:20px; background:#1e293b; padding:10px; border-radius:10px; border:1px solid #10b981; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:30px; height:30px; background:#0f172a; display:flex; justify-content:center; align-items:center; border-radius:5px;"><i class="fas fa-file text-emerald-500"></i></div>
+                <div style="display:flex; flex-direction:column;">
+                    <span id="file-name-label" style="font-size:12px; font-weight:bold;">File Ready</span>
+                    <span style="font-size:9px; color:#10b981;">Ready to analyze</span>
+                </div>
+            </div>
+            <button onclick="clearFile()" style="background:none; border:none; color:#94a3b8; cursor:pointer;">✕</button>
+        </div>
+
+        <footer>
+            <input type="file" id="file-input" style="display:none;">
+            <button onclick="document.getElementById('file-input').click()" style="background:#1e293b; border:1px solid #334155; color:#10b981; width:50px; height:50px; border-radius:10px; cursor:pointer;">
+                <i class="fas fa-paperclip" style="font-size:18px;"></i>
+            </button>
+            <div style="flex:1;">
+                <textarea id="user-input" rows="1" placeholder="輸入訊息..." style="width:100%; height:50px; padding:12px; resize:none;"></textarea>
+            </div>
+            <button onclick="handleSend()" id="send-btn" class="btn-primary" style="height:50px; padding:0 25px;">
+                SEND <i class="fas fa-paper-plane"></i>
+            </button>
         </footer>
     </div>
+
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; // ⚠️ 請務必更換為您的網址
-        let sessId = localStorage.getItem('ANYGEM_USER_ID') || "UID_" + Date.now().toString(36).toUpperCase();
+        // ⚠️⚠️⚠️ 請將此處網址換成您部署後的網址 ⚠️⚠️⚠️
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec";
+        
+        let sessId = localStorage.getItem('ANYGEM_USER_ID') || "UID_" + Date.now();
         localStorage.setItem('ANYGEM_USER_ID', sessId);
+
         const chatWindow = document.getElementById('chat-window'), input = document.getElementById('user-input'), btn = document.getElementById('send-btn'), modeSelect = document.getElementById('mode-select'), searchOptions = document.getElementById('search-options'), pptPanel = document.getElementById('ppt-panel'), previewBar = document.getElementById('file-preview-bar');
         let activeFile = null;
+
         function updateUI() {
             const m = modeSelect.value;
-            if (m === 'search') { searchOptions.classList.add('active'); pptPanel.classList.remove('active'); input.placeholder = "輸入主題，顧問 PM 將引導您..."; }
-            else if (m === 'presentation') { searchOptions.classList.remove('active'); pptPanel.classList.add('active'); input.placeholder = "貼上文章，直接生成簡報..."; }
-            else { searchOptions.classList.remove('active'); pptPanel.classList.remove('active'); input.placeholder = m === 'drawing' ? "輸入描述或上傳草圖..." : "輸入訊息..."; }
+            searchOptions.className = m === 'search' ? 'active' : '';
+            pptPanel.className = m === 'presentation' ? 'active' : '';
+            
+            if (m === 'search') input.placeholder = "輸入主題，顧問 PM 將引導您...";
+            else if (m === 'presentation') input.placeholder = "貼上文章，生成簡報...";
+            else if (m === 'drawing') input.placeholder = "輸入描述或上傳草圖...";
+            else input.placeholder = "輸入訊息...";
+            
             input.focus();
         }
+
         async function handleSend() {
             const text = input.value.trim(); if(!text && !activeFile) return;
             addMessage('user', text, { fileName: activeFile?.name });
+
             const payload = { message: text, session_id: sessId, mode: modeSelect.value, options: {} };
-            if (payload.mode === 'search') { payload.options = { create_report: document.getElementById('create-report-check').checked, create_ppt: document.getElementById('create-ppt-check').checked, style: document.getElementById('consult-style').value, length: document.getElementById('consult-length').value }; }
-            else if (payload.mode === 'presentation') { payload.options = { length: document.getElementById('ppt-length').value, density: document.getElementById('ppt-density').value, theme: document.getElementById('ppt-theme').value, use_ai_image: document.getElementById('ppt-ai-img').checked }; }
+            if (payload.mode === 'search') {
+                payload.options = { 
+                    create_report: document.getElementById('create-report-check').checked, 
+                    create_ppt: document.getElementById('create-ppt-check').checked, 
+                    style: document.getElementById('consult-style').value, 
+                    length: document.getElementById('consult-length').value 
+                };
+            } else if (payload.mode === 'presentation') {
+                payload.options = { 
+                    length: document.getElementById('ppt-length').value, 
+                    density: document.getElementById('ppt-density').value, 
+                    theme: document.getElementById('ppt-theme').value, 
+                    use_ai_image: document.getElementById('ppt-ai-img').checked 
+                };
+            }
+
             const tempFile = activeFile; input.value = ''; clearFile();
-            if(tempFile) { setLoading(true, "Uploading..."); const base64 = await toBase64(tempFile); payload.file_data = base64.split(',')[1]; payload.mime_type = tempFile.type; }
-            let loadTxt = "AI Working..."; if (payload.mode === 'search') loadTxt = "Consulting..."; if (payload.mode === 'presentation') loadTxt = "Generating..."; if (payload.mode === 'drawing') loadTxt = "Painting..."; setLoading(true, loadTxt);
-            try { const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); const data = await res.json(); if(data.status === "success") { addMessage('ai', data.reply, { model: data.model, image: data.image, mime: data.mime }); fetchHistoryList(); } else { addMessage('ai', "🚨 Error: " + (data.error || "Unknown Error")); } } catch (e) { addMessage('ai', "❌ 連線失敗，請檢查網際網路或 GAS 部署狀態。"); } finally { setLoading(false); }
+            if(tempFile) { 
+                setLoading(true, "Uploading..."); 
+                const base64 = await toBase64(tempFile); 
+                payload.file_data = base64.split(',')[1]; 
+                payload.mime_type = tempFile.type; 
+            }
+
+            let loadTxt = "AI Working...";
+            if (payload.mode === 'search') loadTxt = "Consulting...";
+            if (payload.mode === 'presentation') loadTxt = "Generating...";
+            if (payload.mode === 'drawing') loadTxt = "Painting...";
+            setLoading(true, loadTxt);
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const data = await res.json();
+                if(data.status === "success") { 
+                    addMessage('ai', data.reply, { model: data.model, image: data.image, mime: data.mime }); 
+                    fetchHistoryList(); 
+                } else { 
+                    addMessage('ai', "🚨 Error: " + (data.error || "Unknown Error")); 
+                }
+            } catch (e) { 
+                addMessage('ai', "❌ 連線失敗，請檢查部署網址是否正確。"); 
+            } finally { 
+                setLoading(false); 
+            }
         }
+
         function addMessage(role, text, meta = null) {
-            const wrapper = document.createElement('div'); wrapper.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in mb-6`;
-            const msgBox = document.createElement('div'); msgBox.className = `max-w-[85%] p-4 rounded-2xl shadow-xl relative ${role === 'user' ? 'bg-emerald-700 text-white rounded-tr-none' : 'bg-[#1e293b] text-slate-200 border border-emerald-500/10 rounded-tl-none'}`;
-            if(meta?.fileName) msgBox.innerHTML += `<div class="mb-2 p-2 bg-black/20 rounded-lg text-xs flex gap-2 items-center"><i class="fas fa-file"></i> ${meta.fileName}</div>`;
-            if(meta?.image) msgBox.innerHTML += `<img src="data:${meta.mime || 'image/png'};base64,${meta.image}" class="w-full rounded-xl mb-3 shadow-lg border border-white/10">`;
-            const tNode = document.createElement('div'); tNode.className = "prose prose-invert prose-sm max-w-none break-words"; tNode.innerHTML = marked.parse(text || ""); msgBox.appendChild(tNode);
-            if (role === 'ai') { const actions = document.createElement('div'); actions.className = "mt-4 flex gap-2"; const copyBtn = document.createElement('button'); copyBtn.className = "text-[10px] font-bold bg-white/5 hover:bg-emerald-600 px-3 py-1.5 rounded-lg transition-all border border-white/5"; copyBtn.innerHTML = "<i class='fas fa-copy'></i> 複製"; copyBtn.onclick = () => { navigator.clipboard.writeText(text); copyBtn.innerHTML = "<i class='fas fa-check'></i>"; setTimeout(() => copyBtn.innerHTML = "<i class='fas fa-copy'></i> 複製", 2000); }; actions.appendChild(copyBtn); msgBox.appendChild(actions); }
-            wrapper.appendChild(msgBox); chatWindow.appendChild(wrapper); chatWindow.scrollTop = chatWindow.scrollHeight;
+            const row = document.createElement('div');
+            row.className = `msg-row ${role}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'msg-bubble';
+            
+            if(meta?.fileName) bubble.innerHTML += `<div style="font-size:11px; margin-bottom:5px; opacity:0.8;"><i class="fas fa-file"></i> ${meta.fileName}</div>`;
+            if(meta?.image) bubble.innerHTML += `<img src="data:${meta.mime || 'image/png'};base64,${meta.image}">`;
+            
+            if(window.marked) bubble.innerHTML += marked.parse(text || "");
+            else bubble.innerText += text; // Fallback if marked fails
+            
+            row.appendChild(bubble);
+            chatWindow.appendChild(row);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
         }
-        document.getElementById('file-input').onchange = (e) => { activeFile = e.target.files[0]; if(!activeFile) return; previewBar.classList.remove('hidden'); document.getElementById('file-name-label').innerText = activeFile.name; const thumb = document.getElementById('file-thumb'); if(activeFile.type.startsWith('image/')) thumb.innerHTML = `<img src="${URL.createObjectURL(activeFile)}" class="w-full h-full object-cover">`; else thumb.innerHTML = `<i class="fas fa-file-alt text-lg"></i>`; };
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('sidebar-overlay').classList.toggle('hidden'); }
+
+        document.getElementById('file-input').onchange = (e) => {
+            activeFile = e.target.files[0]; if(!activeFile) return;
+            previewBar.style.display = 'flex';
+            document.getElementById('file-name-label').innerText = activeFile.name;
+        };
+
+        function toggleSidebar() { 
+            const sb = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if(sb.style.transform === 'translateX(0px)') {
+                sb.style.transform = ''; overlay.style.display = 'none';
+            } else {
+                sb.style.transform = 'translateX(0px)'; overlay.style.display = 'block';
+            }
+        }
         function newChat() { sessId = "UID_" + Date.now(); localStorage.setItem('ANYGEM_USER_ID', sessId); chatWindow.innerHTML = ''; fetchHistoryList(); }
-        async function fetchHistoryList() { const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), 8000); try { const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'get_session_list' }), signal: controller.signal }); clearTimeout(timeoutId); const data = await res.json(); const list = document.getElementById('history-list'); list.innerHTML = ''; if(data.sessions && data.sessions.length > 0) { data.sessions.forEach(s => { const d = document.createElement('div'); d.className = `p-3 rounded-xl text-xs flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors mb-1 ${s.id === sessId ? 'bg-emerald-900/40 text-white border border-emerald-500/20' : 'text-slate-400'}`; d.innerHTML = `<span onclick="loadSession('${s.id}')" class="truncate flex-1 font-medium">${s.title}</span><i onclick="deleteChat('${s.id}')" class="fas fa-trash ml-2 opacity-50 hover:text-red-400 p-1"></i>`; list.appendChild(d); }); } else { list.innerHTML = '<div class="text-center text-xs text-slate-600 mt-4">尚無對話紀錄</div>'; } } catch(e){} }
-        async function loadSession(id) { sessId = id; chatWindow.innerHTML = '<div class="flex justify-center p-8"><i class="fas fa-circle-notch fa-spin text-emerald-500 text-2xl"></i></div>'; const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'load_session', session_id: id }) }); const data = await res.json(); chatWindow.innerHTML=''; data.logs.forEach(l => addMessage(l.role, l.text)); }
-        async function deleteChat(id) { if(confirm("確定刪除此對話？")) { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'delete_session', session_id: id }) }); fetchHistoryList(); } }
-        function clearFile() { activeFile = null; previewBar.classList.add('hidden'); document.getElementById('file-input').value = ''; }
+        
+        async function fetchHistoryList() {
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'get_session_list' }) });
+                const data = await res.json();
+                const list = document.getElementById('history-list'); list.innerHTML = '';
+                if(data.sessions && data.sessions.length > 0) {
+                    data.sessions.forEach(s => {
+                        const d = document.createElement('div');
+                        d.className = `history-item ${s.id === sessId ? 'active' : ''}`;
+                        d.innerHTML = `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:180px;">${s.title}</span><i class="fas fa-trash" onclick="deleteChat('${s.id}')"></i>`;
+                        d.onclick = (e) => { if(e.target.tagName !== 'I') loadSession(s.id); };
+                        list.appendChild(d);
+                    });
+                } else { list.innerHTML = '<div style="text-align:center;font-size:12px;color:#64748b;margin-top:10px;">尚無紀錄</div>'; }
+            } catch(e){}
+        }
+        
+        async function loadSession(id) { sessId = id; chatWindow.innerHTML = '<div class="loader">Loading...</div>'; const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'load_session', session_id: id }) }); const data = await res.json(); chatWindow.innerHTML=''; data.logs.forEach(l => addMessage(l.role, l.text)); }
+        async function deleteChat(id) { if(confirm("刪除此對話？")) { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'delete_session', session_id: id }) }); fetchHistoryList(); } }
+        function clearFile() { activeFile = null; previewBar.style.display = 'none'; document.getElementById('file-input').value = ''; }
         function toBase64(f) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); }); }
-        function setLoading(isLoading, text) { btn.disabled = isLoading; if(isLoading) { const d = document.createElement('div'); d.id = 'loader'; d.className = 'text-center p-4 animate-pulse text-emerald-500 text-[10px] font-black tracking-widest'; d.innerHTML = `<i class="fas fa-bolt"></i> ${text.toUpperCase()}`; chatWindow.appendChild(d); chatWindow.scrollTop = chatWindow.scrollHeight; } else { document.getElementById('loader')?.remove(); } }
+        
+        function setLoading(isLoading, text) {
+            btn.disabled = isLoading;
+            if(isLoading) {
+                const d = document.createElement('div'); d.id = 'loader'; d.className = 'loader';
+                d.innerHTML = `<i class="fas fa-bolt"></i> ${text.toUpperCase()}`;
+                chatWindow.appendChild(d); chatWindow.scrollTop = chatWindow.scrollHeight;
+            } else { document.getElementById('loader')?.remove(); }
+        }
+        
         updateUI(); fetchHistoryList();
     </script>
 </body>
