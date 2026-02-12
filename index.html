@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>anyGem v53.1 : The Ultimate Consultant</title>
+    <title>anyGem v53.2 : The Ultimate Consultant</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
@@ -13,15 +13,12 @@
         :root { --bg-dark: #020617; --bg-panel: #1e293b; --accent: #10b981; --text: #e2e8f0; }
         body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-dark); color: var(--text); overflow: hidden; display: flex; height: 100vh; width: 100vw; }
         
-        /* 側邊欄 */
         #sidebar { width: 260px; background-color: #0f172a; border-right: 1px solid #1e293b; display: flex; flex-direction: column; z-index: 50; transition: transform 0.3s; }
         @media (max-width: 768px) { #sidebar { position: fixed; height: 100%; transform: translateX(-100%); } #sidebar.open { transform: translateX(0); } }
         
-        /* 主內容區 */
         .main-content { flex: 1; display: flex; flex-direction: column; position: relative; height: 100%; width: 100%; }
-        
-        /* 通用元件 */
         .glass { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 15px; }
+        
         .btn-primary { background-color: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center; }
         .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
         .btn-primary:disabled { opacity: 0.5; cursor: wait; }
@@ -29,37 +26,34 @@
         select, input[type="text"], input[type="number"], textarea { background: #334155; color: white; border: 1px solid #475569; padding: 8px; border-radius: 6px; outline: none; width: 100%; box-sizing: border-box; }
         select:focus, input:focus, textarea:focus { border-color: var(--accent); }
         
-        /* 控制面板 */
         #top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         #search-options, #ppt-panel { background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 15px; margin-top: 10px; display: none; }
         #search-options.active, #ppt-panel.active { display: block; animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* 聊天視窗 */
         #chat-window { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; padding-bottom: 80px; }
         .msg-row { display: flex; margin-bottom: 20px; }
         .msg-row.user { justify-content: flex-end; }
-        .msg-bubble { max-width: 80%; padding: 15px; border-radius: 12px; line-height: 1.6; font-size: 14px; position: relative; }
+        .msg-bubble { max-width: 80%; padding: 15px; border-radius: 12px; line-height: 1.6; font-size: 14px; position: relative; word-wrap: break-word; }
         .msg-row.user .msg-bubble { background-color: #047857; color: white; border-top-right-radius: 2px; }
         .msg-row.ai .msg-bubble { background-color: var(--bg-panel); border: 1px solid #334155; border-top-left-radius: 2px; }
         .msg-bubble img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
         
-        /* 底部輸入區 */
-        footer { padding: 15px; background: rgba(2, 6, 23, 0.95); border-top: 1px solid #1e293b; position: absolute; bottom: 0; width: 100%; display: flex; gap: 10px; align-items: flex-end; }
+        /* 複製按鈕樣式 */
+        .copy-btn { margin-top: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 5px; float: right; transition: all 0.2s; }
+        .copy-btn:hover { background: rgba(16, 185, 129, 0.2); color: var(--accent); border-color: var(--accent); }
         
-        /* 網格系統 */
+        footer { padding: 15px; background: rgba(2, 6, 23, 0.95); border-top: 1px solid #1e293b; position: absolute; bottom: 0; width: 100%; display: flex; gap: 10px; align-items: flex-end; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
         @media (max-width: 640px) { .grid-2, .grid-4 { grid-template-columns: 1fr; } }
         
-        /* 載入動畫 */
         .loader { text-align: center; color: var(--accent); font-size: 12px; font-weight: bold; margin: 10px 0; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
-        /* 歷史紀錄列表 */
-        .history-item { padding: 10px; cursor: pointer; border-radius: 6px; font-size: 13px; color: #94a3b8; display: flex; justify-content: space-between; }
+        .history-item { padding: 10px; cursor: pointer; border-radius: 6px; font-size: 13px; color: #94a3b8; display: flex; justify-content: space-between; margin-bottom: 2px; }
         .history-item:hover { background: rgba(255,255,255,0.05); color: white; }
-        .history-item.active { background: rgba(16, 185, 129, 0.2); color: var(--accent); }
+        .history-item.active { background: rgba(16, 185, 129, 0.2); color: var(--accent); border: 1px solid rgba(16, 185, 129, 0.2); }
     </style>
 </head>
 <body>
@@ -74,7 +68,7 @@
             <div style="text-align: center; font-size: 12px; color: #64748b; margin-top: 20px;">載入紀錄中...</div>
         </div>
         <div style="padding: 15px; text-align: center; font-size: 10px; color: #475569; border-top: 1px solid #1e293b;">
-            ANYGEM V53.1 ULTIMATE
+            ANYGEM V53.2
         </div>
     </aside>
 
@@ -85,7 +79,7 @@
             <div id="top-bar">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;" class="md:hidden"><i class="fas fa-bars"></i></button>
-                    <span style="font-weight:900; font-style:italic; font-size:18px;">anyGem <span style="color:var(--accent); font-size:12px;">v53.1</span></span>
+                    <span style="font-weight:900; font-style:italic; font-size:18px;">anyGem <span style="color:var(--accent); font-size:12px;">v53.2</span></span>
                 </div>
                 <select id="mode-select" onchange="updateUI()" style="width: auto; font-size: 12px; font-weight: bold;">
                     <option value="chat">💬 智能助理</option>
@@ -150,11 +144,12 @@
         <main id="chat-window">
             <div class="msg-row ai">
                 <div class="msg-bubble">
-                    👋 嗨！我是 <b>anyGem v53.1</b> (Safe Mode)。<br>
-                    請選擇上方模式開始：<br>
-                    🌍 <b>深度研究</b>：我會像顧問一樣引導您。<br>
-                    📊 <b>智能簡報</b>：貼上文章，我幫您做 PPT。<br>
-                    🎨 <b>藝術生圖</b>：幫您畫出高品質素材。
+                    👋 嗨！我是 <b>anyGem v53.2</b>。<br>
+                    功能選單已準備就緒：<br>
+                    🌍 <b>深度研究</b>：專業顧問引導 + Doc/Slides 雙產出。<br>
+                    📊 <b>智能簡報</b>：快速生成 Gamma 風格簡報。<br>
+                    🎨 <b>藝術生圖</b>：高品質 AI 繪圖。<br>
+                    <i>(複製功能已修復 ✨)</i>
                 </div>
             </div>
         </main>
@@ -185,8 +180,8 @@
     </div>
 
     <script>
-        // ⚠️⚠️⚠️ 請將此處網址換成您部署後的網址 ⚠️⚠️⚠️
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec";
+        // ⚠️⚠️⚠️ 請務必確認此網址是您最新部署的 Web App URL ⚠️⚠️⚠️
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; 
         
         let sessId = localStorage.getItem('ANYGEM_USER_ID') || "UID_" + Date.now();
         localStorage.setItem('ANYGEM_USER_ID', sessId);
@@ -198,12 +193,10 @@
             const m = modeSelect.value;
             searchOptions.className = m === 'search' ? 'active' : '';
             pptPanel.className = m === 'presentation' ? 'active' : '';
-            
             if (m === 'search') input.placeholder = "輸入主題，顧問 PM 將引導您...";
             else if (m === 'presentation') input.placeholder = "貼上文章，生成簡報...";
             else if (m === 'drawing') input.placeholder = "輸入描述或上傳草圖...";
             else input.placeholder = "輸入訊息...";
-            
             input.focus();
         }
 
@@ -212,6 +205,7 @@
             addMessage('user', text, { fileName: activeFile?.name });
 
             const payload = { message: text, session_id: sessId, mode: modeSelect.value, options: {} };
+            
             if (payload.mode === 'search') {
                 payload.options = { 
                     create_report: document.getElementById('create-report-check').checked, 
@@ -269,8 +263,24 @@
             if(meta?.image) bubble.innerHTML += `<img src="data:${meta.mime || 'image/png'};base64,${meta.image}">`;
             
             if(window.marked) bubble.innerHTML += marked.parse(text || "");
-            else bubble.innerText += text; // Fallback if marked fails
+            else bubble.innerText += text; 
             
+            // ⚠️ 這裡就是補回的複製按鈕邏輯 ⚠️
+            if (role === 'ai') {
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i> 複製內容';
+                copyBtn.onclick = () => {
+                    // 移除 HTML 標籤只複製純文字 (或者您可以選擇複製包含格式的)
+                    const plainText = text; 
+                    navigator.clipboard.writeText(plainText).then(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> 已複製';
+                        setTimeout(() => copyBtn.innerHTML = '<i class="fas fa-copy"></i> 複製內容', 2000);
+                    });
+                };
+                bubble.appendChild(copyBtn);
+            }
+
             row.appendChild(bubble);
             chatWindow.appendChild(row);
             chatWindow.scrollTop = chatWindow.scrollHeight;
