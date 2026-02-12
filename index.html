@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>anyGem v51.0 : Adaptive Intelligence</title>
+    <title>anyGem v52.0 : Geometric Gamma</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -38,7 +38,7 @@
             <div class="text-center text-xs text-slate-500 mt-4 animate-pulse">載入紀錄中...</div>
         </div>
         <div class="p-4 border-t border-white/5 text-[10px] text-center text-slate-500 font-mono tracking-widest">
-            ANYGEM v51.0 ADAPTIVE
+            ANYGEM v52.0 GAMMA
         </div>
     </aside>
 
@@ -47,22 +47,22 @@
     <div class="flex-1 flex flex-col h-full relative md:ml-64 transition-all w-full">
         
         <header class="p-4 glass sticky top-0 z-30 shadow-xl">
-            <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-3">
                     <button onclick="toggleSidebar()" class="md:hidden text-white p-2 hover:bg-white/10 rounded-lg transition-all"><i class="fas fa-bars text-xl"></i></button>
                     <div class="flex flex-col">
-                        <span class="text-lg font-black text-white italic tracking-tighter uppercase hidden sm:block">anyGem <span class="text-emerald-500 text-sm font-bold">v51.0</span></span>
+                        <span class="text-lg font-black text-white italic tracking-tighter uppercase hidden sm:block">anyGem <span class="text-emerald-500 text-sm font-bold">v52.0</span></span>
                     </div>
                 </div>
-                <select id="mode-select" onchange="updateUI()" class="bg-emerald-900/20 text-white text-xs py-2 px-3 rounded-xl border border-emerald-500/30 font-bold outline-none cursor-pointer hover:bg-emerald-900/40 transition-all max-w-[150px] sm:max-w-none">
-                    <option value="chat">💬 智能助理 (Fast)</option>
+                <select id="mode-select" onchange="updateUI()" class="bg-emerald-900/20 text-white text-xs py-2 px-3 rounded-xl border border-emerald-500/30 font-bold outline-none cursor-pointer hover:bg-emerald-900/40 transition-all max-w-[180px] sm:max-w-none">
+                    <option value="chat">💬 智能助理 (Assistant)</option>
+                    <option value="presentation">📊 智能簡報 (Gamma-Like)</option>
                     <option value="search">🌍 深度研究 (Agentic PM)</option>
                     <option value="drawing">🎨 藝術生圖 (Composer)</option>
-                    <option value="presentation">📊 智能簡報 (Adaptive)</option>
                 </select>
             </div>
 
-            <div id="search-options" class="max-w-5xl mx-auto mt-2">
+            <div id="search-options" class="max-w-6xl mx-auto mt-2">
                 <div class="flex items-center gap-3">
                     <input type="checkbox" id="create-report-check" class="w-5 h-5 text-emerald-600 bg-slate-800 border-gray-600 rounded focus:ring-emerald-500" checked>
                     <label for="create-report-check" class="text-sm font-bold text-white cursor-pointer select-none">📝 確認需求後自動生成 Google Doc 專業報告</label>
@@ -70,23 +70,36 @@
                 <p class="text-[10px] text-slate-400 mt-2 pl-8">啟動後將依序執行：搜集事實 ➔ 深度分析 ➔ 繪製封面 ➔ 報告存檔 (約 60s)。</p>
             </div>
 
-            <div id="ppt-panel" class="max-w-5xl mx-auto space-y-4 mt-2">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div id="ppt-panel" class="max-w-6xl mx-auto space-y-4 mt-2">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-1">頁數規劃 (3-20)</label>
-                        <input type="number" id="ppt-length" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5 outline-none focus:border-emerald-500/50" value="5" min="3" max="20">
+                        <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-1">頁數</label>
+                        <input type="number" id="ppt-length" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5 outline-none focus:border-emerald-500/50" value="6" min="3" max="20">
                     </div>
+                    
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-1">視覺風格</label>
-                        <input type="text" id="ppt-style" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5 outline-none focus:border-emerald-500/50" placeholder="例如：極簡、Cyberpunk、科技藍">
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-1">排版策略</label>
-                        <select id="ppt-strategy" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5 outline-none cursor-pointer hover:bg-slate-700 transition-all">
-                            <option value="balanced" selected>⚖️ 智慧平衡 (推薦)</option>
-                            <option value="visual">🎨 視覺優先 (多圖)</option>
-                            <option value="text">📄 資訊優先 (多文字)</option>
+                        <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-1">內容深度</label>
+                        <select id="ppt-density" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5 outline-none cursor-pointer hover:bg-slate-700 transition-all">
+                            <option value="detailed">📚 詳細解說 (適合閱讀)</option>
+                            <option value="brief">⚡ 精簡大綱 (適合演講)</option>
                         </select>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-1">設計主題</label>
+                        <select id="ppt-theme" class="bg-slate-800 text-white text-xs p-3 rounded-xl border border-white/5 outline-none cursor-pointer hover:bg-slate-700 transition-all">
+                            <option value="modern_blue">🔵 科技深藍 (Modern)</option>
+                            <option value="warm_orange">🟠 溫暖活力 (Warm)</option>
+                            <option value="forest_green">🟢 永續森林 (Eco)</option>
+                            <option value="dark_cyber">⚫ 暗黑模式 (Cyber)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex flex-col gap-1 justify-end">
+                         <div class="flex items-center gap-2 p-3 bg-slate-800 rounded-xl border border-white/5 h-[42px]">
+                            <input type="checkbox" id="ppt-ai-img" class="w-4 h-4 text-emerald-500 rounded bg-gray-700 border-gray-600 focus:ring-emerald-600 ring-offset-gray-800 focus:ring-2" checked>
+                            <label for="ppt-ai-img" class="text-xs text-slate-300 cursor-pointer select-none">啟用 AI 配圖</label>
+                         </div>
                     </div>
                 </div>
             </div>
@@ -99,14 +112,14 @@
                 <div id="file-thumb" class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-xl overflow-hidden border border-white/10"></div>
                 <div class="flex flex-col">
                     <span id="file-name-label" class="text-xs font-bold text-white truncate max-w-[150px]">檔案名稱</span>
-                    <span class="text-[9px] text-emerald-400 font-mono tracking-widest uppercase animate-pulse">Ready to process</span>
+                    <span class="text-[9px] text-emerald-400 font-mono tracking-widest uppercase animate-pulse">Ready</span>
                 </div>
             </div>
             <button onclick="clearFile()" class="p-1 bg-white/5 hover:bg-red-500/20 rounded-full transition-all text-slate-400 hover:text-red-400"><i class="fas fa-times"></i></button>
         </div>
 
         <footer class="p-4 glass border-t border-emerald-900/30 z-30 absolute bottom-0 w-full">
-            <div class="max-w-5xl mx-auto flex gap-2 items-end">
+            <div class="max-w-6xl mx-auto flex gap-2 items-end">
                 <input type="file" id="file-input" class="hidden" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.txt,.csv">
                 <button onclick="document.getElementById('file-input').click()" class="bg-slate-800 p-4 rounded-2xl hover:bg-emerald-600/20 active:scale-90 transition-all shadow-xl group">
                     <i class="fas fa-paperclip text-emerald-400 group-hover:text-emerald-300 text-lg"></i>
@@ -137,6 +150,7 @@
             input.focus();
             
             if(m === 'search') input.placeholder = "輸入主題，PM 將與您討論規格...";
+            else if(m === 'presentation') input.placeholder = "貼上文章、報告內容，或輸入主題以生成幾何簡報...";
             else if(m === 'drawing') input.placeholder = "輸入描述，或上傳圖片以鎖定特徵重繪...";
             else input.placeholder = "輸入訊息...";
         }
@@ -204,13 +218,14 @@
             const m = modeSelect.value;
             addMessage('user', text, { fileName: activeFile?.name });
 
-            // v51.0: Updated Payload Construction
+            // v52.0: Updated Payload Construction with Geometric Params
             const payload = {
                 message: text, session_id: sessId, mode: m,
                 options: { 
-                    style: document.getElementById('ppt-style').value, 
                     length: document.getElementById('ppt-length').value,
-                    strategy: document.getElementById('ppt-strategy')?.value || "balanced", // 新增: 策略參數
+                    density: document.getElementById('ppt-density')?.value || "detailed", // 新增: 內容密度
+                    theme: document.getElementById('ppt-theme')?.value || "modern_blue",   // 新增: 主題
+                    use_ai_image: document.getElementById('ppt-ai-img')?.checked || false, // 新增: AI生圖開關
                     create_report: document.getElementById('create-report-check').checked 
                 }
             };
@@ -222,7 +237,11 @@
                 payload.mime_type = tempFile.type;
             }
 
-            const loadingText = (m === 'search') ? "Agentic PM Thinking..." : "AI Working...";
+            // 動態載入文字
+            let loadingText = "AI Working...";
+            if (m === 'search') loadingText = "Agentic PM Thinking...";
+            if (m === 'presentation') loadingText = "Rendering Geometry...";
+            
             setLoading(true, loadingText);
 
             try {
