@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>anyGem v54.1 : Ultimate</title>
+    <title>anyGem v55.0 : Hybrid Presentation Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -47,7 +47,7 @@
             <button onclick="newChat()" class="btn-primary" style="width: 100%;"><i class="fas fa-plus"></i> 新增對話</button>
         </div>
         <div id="history-list" style="flex: 1; overflow-y: auto; padding: 10px;"><div style="text-align: center; font-size: 12px; color: #64748b; margin-top: 20px;">載入紀錄中...</div></div>
-        <div style="padding: 15px; text-align: center; font-size: 10px; color: #475569; border-top: 1px solid #1e293b;">ANYGEM V54.1</div>
+        <div style="padding: 15px; text-align: center; font-size: 10px; color: #475569; border-top: 1px solid #1e293b;">ANYGEM V55.0</div>
     </aside>
     <div id="overlay" onclick="toggleSidebar()" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:40;display:none;"></div>
     <div class="main-content">
@@ -55,21 +55,67 @@
             <div id="top-bar">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;" class="md:hidden"><i class="fas fa-bars"></i></button>
-                    <span style="font-weight:900; font-style:italic; font-size:18px;">anyGem <span style="color:var(--accent); font-size:12px;">v54.1</span></span>
+                    <span style="font-weight:900; font-style:italic; font-size:18px;">anyGem <span style="color:var(--accent); font-size:12px;">v55</span></span>
                 </div>
                 <select id="mode-select" onchange="updateUI()" style="width: auto; font-size: 12px; font-weight: bold;">
                     <option value="chat">💬 智能助理</option>
-                    <option value="search">🌍 深度研究 (顧問模式)</option>
-                    <option value="report">📝 專業研報 (Doc 模式)</option>
-                    <option value="presentation">📊 智能簡報 (Gamma 模式)</option>
+                    <option value="search">🌍 深度研究</option>
+                    <option value="report">📝 專業研報</option>
+                    <option value="presentation">📊 智能簡報</option>
                     <option value="drawing">🎨 藝術生圖</option>
                 </select>
             </div>
-            <div id="search-options"><div style="font-size:11px; color:#94a3b8;"><i class="fas fa-info-circle"></i> 此模式僅進行顧問諮詢與深度文字分析。</div></div>
+            
+            <div id="search-options"><div style="font-size:11px; color:#94a3b8;"><i class="fas fa-info-circle"></i> 文字顧問諮詢模式。</div></div>
             <div id="report-panel"><div class="grid-2"><div><label style="font-size:9px; color:#10b981; font-weight:bold; display:block; margin-bottom:4px;">研報風格</label><input type="text" id="report-style" placeholder="自定義，如：學術嚴謹、幽默風趣..."></div><div style="display:flex; align-items:center;"><span style="font-size:10px; color:#64748b;">將自動生成 Google Doc</span></div></div></div>
-            <div id="ppt-panel"><div class="grid-4"><div><label style="font-size:9px; color:#10b981; font-weight:bold;">頁數</label><input type="number" id="ppt-length" value="6" min="3" max="20"></div><div><label style="font-size:9px; color:#10b981; font-weight:bold;">深度</label><select id="ppt-density"><option value="detailed">📚 詳細</option><option value="brief">⚡ 精簡</option></select></div><div><label style="font-size:9px; color:#10b981; font-weight:bold;">主題</label><select id="ppt-theme"><option value="modern_blue">🔵 科技藍</option><option value="warm_orange">🟠 溫暖橘</option><option value="forest_green">🟢 森林綠</option><option value="dark_cyber">⚫ 暗黑</option></select></div><div style="display:flex;align-items:flex-end;"><div style="background:#0f172a;padding:8px;border-radius:6px;width:100%;height:35px;display:flex;align-items:center;gap:8px;"><input type="checkbox" id="ppt-ai-img" checked style="width:14px;height:14px;"><label for="ppt-ai-img" style="font-size:11px;">配圖</label></div></div></div></div>
+            
+            <div id="ppt-panel">
+                <div class="grid-4" style="margin-bottom: 8px;">
+                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">生成模式</label>
+                        <select id="ppt-mode">
+                            <option value="hybrid">✨ 混合 (圖+文)</option>
+                            <option value="geometric">📐 純幾何 (Gamma)</option>
+                            <option value="ai_visual">🎨 純 AI 圖像</option>
+                        </select>
+                    </div>
+                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">內容深度</label>
+                        <select id="ppt-density">
+                            <option value="detailed">📚 仔細 (詳細內容)</option>
+                            <option value="brief">⚡ 綱要 (重點條列)</option>
+                        </select>
+                    </div>
+                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">色系搭配</label>
+                        <select id="ppt-theme">
+                            <option value="modern_blue">🔵 科技藍</option>
+                            <option value="warm_orange">🟠 溫暖橘</option>
+                            <option value="forest_green">🟢 森林綠</option>
+                            <option value="dark_cyber">⚫ 暗黑系</option>
+                        </select>
+                    </div>
+                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">預計頁數</label>
+                        <input type="number" id="ppt-length" value="6" min="3" max="20">
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div>
+                        <label style="font-size:9px; color:#10b981; font-weight:bold;">視覺風格 (AI 建議)</label>
+                        <select id="ppt-style-preset" onchange="checkCustomStyle()">
+                            <option value="auto">🤖 AI 自動推薦</option>
+                            <option value="minimalist">Minimalist (極簡白)</option>
+                            <option value="corporate">Corporate (商務專業)</option>
+                            <option value="creative">Creative (創意手繪)</option>
+                            <option value="custom">✏️ 自行定義...</option>
+                        </select>
+                    </div>
+                    <div id="custom-style-container" style="display:none;">
+                        <label style="font-size:9px; color:#10b981; font-weight:bold;">自定義風格描述</label>
+                        <input type="text" id="ppt-style-custom" placeholder="例如：Cyberpunk, 水彩風...">
+                    </div>
+                </div>
+            </div>
         </header>
-        <main id="chat-window"><div class="msg-row ai"><div class="msg-bubble">👋 <b>anyGem v54.1</b> 系統已就緒！<br>請選擇功能模式開始使用。<br><i>(複製功能 & 簡報引擎已升級 ✨)</i></div></div></main>
+
+        <main id="chat-window"><div class="msg-row ai"><div class="msg-bubble">👋 <b>anyGem v55.0</b> 簡報引擎大升級！<br>現在支援三種生成模式：<br>1. <b>混合模式</b>：圖文並茂，最佳推薦。<br>2. <b>純幾何</b>：速度快，Gamma 風格。<br>3. <b>純 AI 圖</b>：視覺衝擊，全圖背景。<br><i>(請在上方選單設定)</i></div></div></main>
         <div id="file-preview-bar" style="display:none;position:absolute;bottom:90px;left:20px;right:20px;background:#1e293b;padding:10px;border-radius:10px;border:1px solid #10b981;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:10px;"><div style="width:30px;height:30px;background:#0f172a;display:flex;justify-content:center;align-items:center;border-radius:5px;"><i class="fas fa-file text-emerald-500"></i></div><div style="display:flex;flex-direction:column;"><span id="file-name-label" style="font-size:12px;font-weight:bold;">File</span><span style="font-size:9px;color:#10b981;">Ready</span></div></div><button onclick="clearFile()" style="background:none;border:none;color:#94a3b8;cursor:pointer;">✕</button></div>
         <footer>
             <input type="file" id="file-input" style="display:none;">
@@ -83,24 +129,42 @@
         let sessId = localStorage.getItem('ANYGEM_USER_ID') || "UID_" + Date.now(); localStorage.setItem('ANYGEM_USER_ID', sessId);
         const chatWindow = document.getElementById('chat-window'), input = document.getElementById('user-input'), btn = document.getElementById('send-btn'), modeSelect = document.getElementById('mode-select'), searchOptions = document.getElementById('search-options'), reportPanel = document.getElementById('report-panel'), pptPanel = document.getElementById('ppt-panel'), previewBar = document.getElementById('file-preview-bar');
         let activeFile = null;
+
         function updateUI() {
             const m = modeSelect.value;
             searchOptions.className = m === 'search' ? 'active' : ''; reportPanel.className = m === 'report' ? 'active' : ''; pptPanel.className = m === 'presentation' ? 'active' : '';
-            if(m==='search') input.placeholder = "輸入主題，開始顧問諮詢...";
-            else if(m==='report') input.placeholder = "輸入內容或主題，生成文件...";
-            else if(m==='presentation') input.placeholder = "貼上文章，生成簡報...";
-            else input.placeholder = "輸入訊息...";
+            if(m==='search') input.placeholder = "輸入主題..."; else if(m==='report') input.placeholder = "輸入主題生成文件..."; else if(m==='presentation') input.placeholder = "貼上文章，生成簡報..."; else input.placeholder = "輸入訊息...";
             input.focus();
         }
+        function checkCustomStyle() {
+            const val = document.getElementById('ppt-style-preset').value;
+            document.getElementById('custom-style-container').style.display = val === 'custom' ? 'block' : 'none';
+        }
+
         async function handleSend() {
             const text = input.value.trim(); if(!text && !activeFile) return;
             addMessage('user', text, { fileName: activeFile?.name });
             const payload = { message: text, session_id: sessId, mode: modeSelect.value, options: {} };
-            if (payload.mode === 'report') payload.options = { style: document.getElementById('report-style').value };
-            else if (payload.mode === 'presentation') payload.options = { length: document.getElementById('ppt-length').value, density: document.getElementById('ppt-density').value, theme: document.getElementById('ppt-theme').value, use_ai_image: document.getElementById('ppt-ai-img').checked };
+            
+            if (payload.mode === 'report') {
+                payload.options = { style: document.getElementById('report-style').value };
+            } else if (payload.mode === 'presentation') {
+                const preset = document.getElementById('ppt-style-preset').value;
+                const custom = document.getElementById('ppt-style-custom').value;
+                payload.options = { 
+                    length: document.getElementById('ppt-length').value, 
+                    density: document.getElementById('ppt-density').value, 
+                    theme: document.getElementById('ppt-theme').value, 
+                    ppt_mode: document.getElementById('ppt-mode').value, // 新增：混合/幾何/AI
+                    visual_style: preset === 'custom' ? custom : preset // 新增：視覺風格
+                };
+            }
+
             const tempFile = activeFile; input.value = ''; clearFile();
             if(tempFile) { setLoading(true, "Uploading..."); const base64 = await toBase64(tempFile); payload.file_data = base64.split(',')[1]; payload.mime_type = tempFile.type; }
-            let loadTxt = "AI Working..."; if(payload.mode==='search') loadTxt="Consulting..."; if(payload.mode==='report') loadTxt="Writing..."; if(payload.mode==='presentation') loadTxt="Generating..."; setLoading(true, loadTxt);
+            let loadTxt = "Processing..."; if(payload.mode==='presentation') loadTxt="Generating Slides...";
+            setLoading(true, loadTxt);
+
             try { const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); const data = await res.json(); if(data.status === "success") { addMessage('ai', data.reply, { model: data.model, image: data.image, mime: data.mime }); fetchHistoryList(); } else { addMessage('ai', "🚨 Error: " + (data.error || "Unknown")); } } catch (e) { addMessage('ai', "❌ 連線失敗"); } finally { setLoading(false); }
         }
         function addMessage(role, text, meta = null) {
@@ -109,11 +173,7 @@
             if(meta?.fileName) bubble.innerHTML += `<div style="font-size:11px;margin-bottom:5px;opacity:0.8;"><i class="fas fa-file"></i> ${meta.fileName}</div>`;
             if(meta?.image) bubble.innerHTML += `<img src="data:${meta.mime||'image/png'};base64,${meta.image}">`;
             if(window.marked) bubble.innerHTML += marked.parse(text||""); else bubble.innerText += text;
-            if(role==='ai'){
-                const copyBtn=document.createElement('button'); copyBtn.className='copy-btn'; copyBtn.innerHTML='<i class="fas fa-copy"></i> 複製';
-                copyBtn.onclick=()=>{navigator.clipboard.writeText(text).then(()=>{copyBtn.innerHTML='<i class="fas fa-check"></i>';setTimeout(()=>copyBtn.innerHTML='<i class="fas fa-copy"></i> 複製',2000);});};
-                bubble.appendChild(copyBtn);
-            }
+            if(role==='ai'){const c=document.createElement('button');c.className='copy-btn';c.innerHTML='<i class="fas fa-copy"></i>';c.onclick=()=>{navigator.clipboard.writeText(text);};bubble.appendChild(c);}
             row.appendChild(bubble); chatWindow.appendChild(row); chatWindow.scrollTop = chatWindow.scrollHeight;
         }
         document.getElementById('file-input').onchange = (e) => { activeFile = e.target.files[0]; if(!activeFile) return; previewBar.style.display = 'flex'; document.getElementById('file-name-label').innerText = activeFile.name; };
