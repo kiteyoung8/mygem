@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>anyGem v54.0 : Modular Engine</title>
+    <title>anyGem v54.0 : The Ultimate Consultant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -46,7 +46,7 @@
         <div style="padding: 20px; border-bottom: 1px solid #1e293b;">
             <button onclick="newChat()" class="btn-primary" style="width: 100%;"><i class="fas fa-plus"></i> 新增對話</button>
         </div>
-        <div id="history-list" style="flex: 1; overflow-y: auto; padding: 10px;"><div style="text-align: center; font-size: 12px; color: #64748b; mt-4;">載入中...</div></div>
+        <div id="history-list" style="flex: 1; overflow-y: auto; padding: 10px;"><div style="text-align: center; font-size: 12px; color: #64748b; margin-top: 20px;">載入紀錄中...</div></div>
         <div style="padding: 15px; text-align: center; font-size: 10px; color: #475569; border-top: 1px solid #1e293b;">ANYGEM V54.0</div>
     </aside>
     <div id="overlay" onclick="toggleSidebar()" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:40;display:none;"></div>
@@ -65,43 +65,12 @@
                     <option value="drawing">🎨 藝術生圖</option>
                 </select>
             </div>
-            
-            <div id="search-options">
-                <div style="font-size:11px; color:#94a3b8;">
-                    <i class="fas fa-info-circle"></i> 此模式僅進行顧問諮詢與深度文字分析，不產生檔案。
-                </div>
-            </div>
-
-            <div id="report-panel">
-                <div class="grid-2">
-                    <div>
-                        <label style="font-size:9px; color:#10b981; font-weight:bold; display:block; margin-bottom:4px;">研報風格</label>
-                        <input type="text" id="report-style" placeholder="自定義，如：學術嚴謹、幽默風趣、商業提案...">
-                    </div>
-                    <div style="display:flex; align-items:center;">
-                        <span style="font-size:10px; color:#64748b;">將自動生成 Google Doc 文件</span>
-                    </div>
-                </div>
-            </div>
-
-            <div id="ppt-panel">
-                <div class="grid-4">
-                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">頁數</label><input type="number" id="ppt-length" value="6" min="3" max="20"></div>
-                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">深度</label><select id="ppt-density"><option value="detailed">📚 詳細</option><option value="brief">⚡ 精簡</option></select></div>
-                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">主題</label><select id="ppt-theme"><option value="modern_blue">🔵 科技藍</option><option value="warm_orange">🟠 溫暖橘</option><option value="forest_green">🟢 森林綠</option><option value="dark_cyber">⚫ 暗黑</option></select></div>
-                    <div style="display:flex;align-items:flex-end;"><div style="background:#0f172a;padding:8px;border-radius:6px;width:100%;height:35px;display:flex;align-items:center;gap:8px;"><input type="checkbox" id="ppt-ai-img" checked style="width:14px;height:14px;"><label for="ppt-ai-img" style="font-size:11px;">配圖</label></div></div>
-                </div>
-            </div>
+            <div id="search-options"><div style="font-size:11px; color:#94a3b8;"><i class="fas fa-info-circle"></i> 此模式僅進行顧問諮詢與深度文字分析。</div></div>
+            <div id="report-panel"><div class="grid-2"><div><label style="font-size:9px; color:#10b981; font-weight:bold; display:block; margin-bottom:4px;">研報風格</label><input type="text" id="report-style" placeholder="自定義，如：學術嚴謹、幽默風趣..."></div><div style="display:flex; align-items:center;"><span style="font-size:10px; color:#64748b;">將自動生成 Google Doc</span></div></div></div>
+            <div id="ppt-panel"><div class="grid-4"><div><label style="font-size:9px; color:#10b981; font-weight:bold;">頁數</label><input type="number" id="ppt-length" value="6" min="3" max="20"></div><div><label style="font-size:9px; color:#10b981; font-weight:bold;">深度</label><select id="ppt-density"><option value="detailed">📚 詳細</option><option value="brief">⚡ 精簡</option></select></div><div><label style="font-size:9px; color:#10b981; font-weight:bold;">主題</label><select id="ppt-theme"><option value="modern_blue">🔵 科技藍</option><option value="warm_orange">🟠 溫暖橘</option><option value="forest_green">🟢 森林綠</option><option value="dark_cyber">⚫ 暗黑</option></select></div><div style="display:flex;align-items:flex-end;"><div style="background:#0f172a;padding:8px;border-radius:6px;width:100%;height:35px;display:flex;align-items:center;gap:8px;"><input type="checkbox" id="ppt-ai-img" checked style="width:14px;height:14px;"><label for="ppt-ai-img" style="font-size:11px;">配圖</label></div></div></div></div>
         </header>
-
-        <main id="chat-window">
-            <div class="msg-row ai"><div class="msg-bubble">👋 <b>anyGem v54.0</b> 已更新！<br>• <b>深度研究</b>：純文字顧問諮詢。<br>• <b>專業研報</b>：新增模式！自訂風格生成文件。<br>• <b>智能簡報</b>：快速製作 Gamma 風格 PPT。</div></div>
-        </main>
-        
-        <div id="file-preview-bar" style="display:none;position:absolute;bottom:90px;left:20px;right:20px;background:#1e293b;padding:10px;border-radius:10px;border:1px solid #10b981;align-items:center;justify-content:space-between;">
-            <div style="display:flex;align-items:center;gap:10px;"><div style="width:30px;height:30px;background:#0f172a;display:flex;justify-content:center;align-items:center;border-radius:5px;"><i class="fas fa-file text-emerald-500"></i></div><div style="display:flex;flex-direction:column;"><span id="file-name-label" style="font-size:12px;font-weight:bold;">File</span><span style="font-size:9px;color:#10b981;">Ready</span></div></div><button onclick="clearFile()" style="background:none;border:none;color:#94a3b8;cursor:pointer;">✕</button>
-        </div>
-
+        <main id="chat-window"><div class="msg-row ai"><div class="msg-bubble">👋 <b>anyGem v54.0</b> 已更新！<br>• <b>深度研究</b>：純文字顧問諮詢。<br>• <b>專業研報</b>：獨立 Doc 生成模式。<br>• <b>智能簡報</b>：Gamma 風格 PPT (Bug修復)。</div></div></main>
+        <div id="file-preview-bar" style="display:none;position:absolute;bottom:90px;left:20px;right:20px;background:#1e293b;padding:10px;border-radius:10px;border:1px solid #10b981;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:10px;"><div style="width:30px;height:30px;background:#0f172a;display:flex;justify-content:center;align-items:center;border-radius:5px;"><i class="fas fa-file text-emerald-500"></i></div><div style="display:flex;flex-direction:column;"><span id="file-name-label" style="font-size:12px;font-weight:bold;">File</span><span style="font-size:9px;color:#10b981;">Ready</span></div></div><button onclick="clearFile()" style="background:none;border:none;color:#94a3b8;cursor:pointer;">✕</button></div>
         <footer>
             <input type="file" id="file-input" style="display:none;">
             <button onclick="document.getElementById('file-input').click()" style="background:#1e293b;border:1px solid #334155;color:#10b981;width:50px;height:50px;border-radius:10px;cursor:pointer;"><i class="fas fa-paperclip" style="font-size:18px;"></i></button>
@@ -109,50 +78,31 @@
             <button onclick="handleSend()" id="send-btn" class="btn-primary" style="height:50px;padding:0 25px;">SEND <i class="fas fa-paper-plane"></i></button>
         </footer>
     </div>
-
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; // ⚠️ 請記得換網址！
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; // ⚠️ 請務必更換！
         let sessId = localStorage.getItem('ANYGEM_USER_ID') || "UID_" + Date.now(); localStorage.setItem('ANYGEM_USER_ID', sessId);
         const chatWindow = document.getElementById('chat-window'), input = document.getElementById('user-input'), btn = document.getElementById('send-btn'), modeSelect = document.getElementById('mode-select'), searchOptions = document.getElementById('search-options'), reportPanel = document.getElementById('report-panel'), pptPanel = document.getElementById('ppt-panel'), previewBar = document.getElementById('file-preview-bar');
         let activeFile = null;
-
         function updateUI() {
             const m = modeSelect.value;
-            searchOptions.className = m === 'search' ? 'active' : '';
-            reportPanel.className = m === 'report' ? 'active' : '';
-            pptPanel.className = m === 'presentation' ? 'active' : '';
-            if(m==='search') input.placeholder = "輸入主題，開始深度諮詢...";
-            else if(m==='report') input.placeholder = "輸入主題或貼上文字，生成專業研報...";
-            else if(m==='presentation') input.placeholder = "輸入主題，生成簡報...";
+            searchOptions.className = m === 'search' ? 'active' : ''; reportPanel.className = m === 'report' ? 'active' : ''; pptPanel.className = m === 'presentation' ? 'active' : '';
+            if(m==='search') input.placeholder = "輸入主題，開始顧問諮詢...";
+            else if(m==='report') input.placeholder = "輸入內容或主題，生成文件...";
+            else if(m==='presentation') input.placeholder = "貼上文章，生成簡報...";
             else input.placeholder = "輸入訊息...";
             input.focus();
         }
-
         async function handleSend() {
             const text = input.value.trim(); if(!text && !activeFile) return;
             addMessage('user', text, { fileName: activeFile?.name });
             const payload = { message: text, session_id: sessId, mode: modeSelect.value, options: {} };
-            
-            // 參數組裝
-            if (payload.mode === 'report') {
-                payload.options = { style: document.getElementById('report-style').value };
-            } else if (payload.mode === 'presentation') {
-                payload.options = { length: document.getElementById('ppt-length').value, density: document.getElementById('ppt-density').value, theme: document.getElementById('ppt-theme').value, use_ai_image: document.getElementById('ppt-ai-img').checked };
-            }
-
+            if (payload.mode === 'report') payload.options = { style: document.getElementById('report-style').value };
+            else if (payload.mode === 'presentation') payload.options = { length: document.getElementById('ppt-length').value, density: document.getElementById('ppt-density').value, theme: document.getElementById('ppt-theme').value, use_ai_image: document.getElementById('ppt-ai-img').checked };
             const tempFile = activeFile; input.value = ''; clearFile();
             if(tempFile) { setLoading(true, "Uploading..."); const base64 = await toBase64(tempFile); payload.file_data = base64.split(',')[1]; payload.mime_type = tempFile.type; }
-            let loadTxt = "Processing..."; if(payload.mode === 'search') loadTxt = "Consulting..."; if(payload.mode === 'report') loadTxt = "Writing Doc..."; if(payload.mode === 'presentation') loadTxt = "Generating Slides...";
-            setLoading(true, loadTxt);
-
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const data = await res.json();
-                if(data.status === "success") { addMessage('ai', data.reply, { model: data.model, image: data.image, mime: data.mime }); fetchHistoryList(); } 
-                else { addMessage('ai', "🚨 Error: " + (data.error || "Unknown")); }
-            } catch (e) { addMessage('ai', "❌ 連線失敗"); } finally { setLoading(false); }
+            let loadTxt = "AI Working..."; if(payload.mode==='search') loadTxt="Consulting..."; if(payload.mode==='report') loadTxt="Writing..."; if(payload.mode==='presentation') loadTxt="Generating..."; setLoading(true, loadTxt);
+            try { const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); const data = await res.json(); if(data.status === "success") { addMessage('ai', data.reply, { model: data.model, image: data.image, mime: data.mime }); fetchHistoryList(); } else { addMessage('ai', "🚨 Error: " + (data.error || "Unknown")); } } catch (e) { addMessage('ai', "❌ 連線失敗"); } finally { setLoading(false); }
         }
-
         function addMessage(role, text, meta = null) {
             const row = document.createElement('div'); row.className = `msg-row ${role}`;
             const bubble = document.createElement('div'); bubble.className = 'msg-bubble';
@@ -166,11 +116,10 @@
             }
             row.appendChild(bubble); chatWindow.appendChild(row); chatWindow.scrollTop = chatWindow.scrollHeight;
         }
-
         document.getElementById('file-input').onchange = (e) => { activeFile = e.target.files[0]; if(!activeFile) return; previewBar.style.display = 'flex'; document.getElementById('file-name-label').innerText = activeFile.name; };
         function toggleSidebar() { const sb=document.getElementById('sidebar'),ov=document.getElementById('overlay'); if(sb.style.transform==='translateX(0px)'){sb.style.transform='';ov.style.display='none';}else{sb.style.transform='translateX(0px)';ov.style.display='block';} }
         function newChat() { sessId = "UID_" + Date.now(); localStorage.setItem('ANYGEM_USER_ID', sessId); chatWindow.innerHTML = ''; fetchHistoryList(); }
-        async function fetchHistoryList() { try{const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({mode:'system',action:'get_session_list'})});const data=await res.json();const list=document.getElementById('history-list');list.innerHTML='';if(data.sessions&&data.sessions.length>0){data.sessions.forEach(s=>{const d=document.createElement('div');d.className=`history-item ${s.id===sessId?'active':''}`;d.innerHTML=`<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:180px;">${s.title}</span><i class="fas fa-trash" onclick="deleteChat('${s.id}')"></i>`;d.onclick=(e)=>{if(e.target.tagName!=='I')loadSession(s.id);};list.appendChild(d);});}else{list.innerHTML='<div style="text-align:center;font-size:12px;color:#64748b;margin-top:10px;">尚無紀錄</div>';}}catch(e){} }
+        async function fetchHistoryList() { const c = new AbortController(); setTimeout(()=>c.abort(),8000); try{ const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'get_session_list' }), signal:c.signal }); const data = await res.json(); const list = document.getElementById('history-list'); list.innerHTML = ''; if(data.sessions&&data.sessions.length>0){data.sessions.forEach(s=>{const d=document.createElement('div');d.className=`history-item ${s.id===sessId?'active':''}`;d.innerHTML=`<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:180px;">${s.title}</span><i class="fas fa-trash" onclick="deleteChat('${s.id}')"></i>`;d.onclick=(e)=>{if(e.target.tagName!=='I')loadSession(s.id);};list.appendChild(d);});}else{list.innerHTML='<div style="text-align:center;font-size:12px;color:#64748b;margin-top:10px;">尚無紀錄</div>';}}catch(e){} }
         async function loadSession(id) { sessId=id;chatWindow.innerHTML='<div class="loader">Loading...</div>';const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({mode:'system',action:'load_session',session_id:id})});const data=await res.json();chatWindow.innerHTML='';data.logs.forEach(l=>addMessage(l.role,l.text)); }
         async function deleteChat(id) { if(confirm("刪除此對話？")){await fetch(GAS_URL,{method:'POST',body:JSON.stringify({mode:'system',action:'delete_session',session_id:id})});fetchHistoryList();} }
         function clearFile() { activeFile=null;previewBar.style.display='none';document.getElementById('file-input').value=''; }
