@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>anyGem v53.0 : Gamma-Killer</title>
+    <title>anyGem v53.1 : The Ultimate Consultant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -17,9 +17,9 @@
         .sidebar-transition { transition: transform 0.3s ease-in-out; }
         .glass { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         
-        /* 面板動畫設定 */
+        /* 面板動畫 */
         #search-options, #ppt-panel { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); max-height: 0; opacity: 0; overflow: hidden; }
-        #search-options.active, #ppt-panel.active { max-height: 500px; opacity: 1; margin-top: 1rem; padding: 1.25rem; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 1.5rem; background: rgba(16, 185, 129, 0.05); }
+        #search-options.active, #ppt-panel.active { max-height: 600px; opacity: 1; margin-top: 1rem; padding: 1.25rem; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 1.5rem; background: rgba(16, 185, 129, 0.05); }
         
         .history-item .delete-btn { opacity: 0; transition: opacity 0.2s; }
         .history-item:hover .delete-btn { opacity: 1; }
@@ -35,7 +35,7 @@
         </div>
         <div class="flex-grow overflow-y-auto p-3 space-y-2" id="history-list"></div>
         <div class="p-4 border-t border-white/5 text-[10px] text-center text-slate-500 font-mono uppercase tracking-widest">
-            anyGem v53.0 PRO
+            anyGem v53.1 Ultimate
         </div>
     </aside>
 
@@ -47,20 +47,36 @@
             <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-3">
                     <button onclick="toggleSidebar()" class="md:hidden text-white p-2 hover:bg-white/10 rounded-lg"><i class="fas fa-bars text-xl"></i></button>
-                    <span class="text-xl font-black text-white italic tracking-tighter uppercase">anyGem <span class="text-emerald-500 text-sm">v53</span></span>
+                    <span class="text-xl font-black text-white italic tracking-tighter uppercase">anyGem <span class="text-emerald-500 text-sm">v53.1</span></span>
                 </div>
                 <select id="mode-select" onchange="updateUI()" class="bg-emerald-900/20 text-white text-xs py-2 px-3 rounded-xl border border-emerald-500/30 font-bold outline-none cursor-pointer">
                     <option value="chat">💬 智能助理</option>
-                    <option value="presentation">📊 智能簡報 (Gamma-Like)</option>
                     <option value="search">🌍 深度研究 (顧問模式)</option>
+                    <option value="presentation">📊 智能簡報 (Gamma 模式)</option>
                     <option value="drawing">🎨 藝術生圖</option>
                 </select>
             </div>
 
             <div id="search-options" class="max-w-6xl mx-auto">
-                <div class="flex items-center gap-3 bg-slate-900/50 p-3 rounded-xl border border-white/5">
-                    <input type="checkbox" id="create-report-check" class="w-5 h-5 text-emerald-600 bg-slate-800 border-gray-600 rounded" checked>
-                    <label for="create-report-check" class="text-xs font-bold text-white cursor-pointer select-none">📝 生成專業研報 (Google Doc)</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div class="flex items-center gap-3 bg-slate-900/50 p-3 rounded-xl border border-white/5">
+                        <input type="checkbox" id="create-report-check" class="w-5 h-5 text-emerald-600 bg-slate-800 border-gray-600 rounded" checked>
+                        <label for="create-report-check" class="text-xs font-bold text-white cursor-pointer select-none">📝 生成專業研報 (Google Doc)</label>
+                    </div>
+                    <div class="flex items-center gap-3 bg-slate-900/50 p-3 rounded-xl border border-white/5">
+                        <input type="checkbox" id="create-ppt-check" class="w-5 h-5 text-emerald-600 bg-slate-800 border-gray-600 rounded">
+                        <label for="create-ppt-check" class="text-xs font-bold text-white cursor-pointer select-none">📊 生成智能簡報 (Google Slides)</label>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">風格指令 (如: 科技藍/溫暖橘)</label>
+                        <input type="text" id="consult-style" class="bg-slate-800 border-b border-white/10 text-white text-xs p-2 rounded-lg outline-none focus:border-emerald-500" placeholder="PM 建議後輸入...">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">預計頁數</label>
+                        <input type="number" id="consult-length" class="bg-slate-800 border-b border-white/10 text-white text-xs p-2 rounded-lg outline-none focus:border-emerald-500" value="6">
+                    </div>
                 </div>
             </div>
 
@@ -102,8 +118,8 @@
             <div class="flex items-center space-x-3">
                 <div id="file-thumb" class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-white/10 overflow-hidden text-emerald-500"></div>
                 <div class="flex flex-col">
-                    <span id="file-name-label" class="text-xs font-bold text-white truncate max-w-[150px]">附件已就緒</span>
-                    <span class="text-[9px] text-emerald-400 font-mono tracking-widest uppercase animate-pulse">Ready to Process</span>
+                    <span id="file-name-label" class="text-xs font-bold text-white truncate max-w-[150px]">檔案已就緒</span>
+                    <span class="text-[9px] text-emerald-400 font-mono tracking-widest uppercase animate-pulse">Ready to Analyze</span>
                 </div>
             </div>
             <button onclick="clearFile()" class="p-1 bg-white/5 rounded-full text-slate-400 hover:text-red-400">✕</button>
@@ -124,7 +140,7 @@
     </div>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; // ⚠️ 請填入您的佈署網址
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; // ⚠️ 請填入您的網址
         
         let sessId = localStorage.getItem('ANYGEM_USER_ID') || "UID_" + Math.random().toString(36).substr(2, 9).toUpperCase();
         localStorage.setItem('ANYGEM_USER_ID', sessId);
@@ -134,19 +150,16 @@
 
         function updateUI() {
             const m = modeSelect.value;
-            // 控制面板顯示邏輯
+            // 控制面板顯示
             if (m === 'search') {
-                searchOptions.classList.add('active');
-                pptPanel.classList.remove('active');
-                input.placeholder = "輸入主題或貼上文字，顧問將為您規劃...";
+                searchOptions.classList.add('active'); pptPanel.classList.remove('active');
+                input.placeholder = "輸入主題，顧問 PM 將引導您...";
             } else if (m === 'presentation') {
-                searchOptions.classList.remove('active');
-                pptPanel.classList.add('active');
-                input.placeholder = "貼上文章、報告內容，或輸入主題以生成幾何簡報...";
+                searchOptions.classList.remove('active'); pptPanel.classList.add('active');
+                input.placeholder = "貼上文章或輸入主題，直接生成 Gamma 風格簡報...";
             } else {
-                searchOptions.classList.remove('active');
-                pptPanel.classList.remove('active');
-                input.placeholder = (m === 'drawing') ? "輸入描述或上傳圖片..." : "輸入訊息...";
+                searchOptions.classList.remove('active'); pptPanel.classList.remove('active');
+                input.placeholder = m === 'drawing' ? "輸入描述或上傳草圖..." : "輸入訊息...";
             }
             input.focus();
         }
@@ -155,19 +168,28 @@
             const text = input.value.trim(); if(!text && !activeFile) return;
             addMessage('user', text, { fileName: activeFile?.name });
 
-            // 根據模式組裝參數
+            // 根據模式組裝不同參數
             const payload = {
                 message: text, session_id: sessId, mode: modeSelect.value,
-                options: { 
-                    // Search 模式用
+                options: {}
+            };
+
+            // 參數分流
+            if (payload.mode === 'search') {
+                payload.options = {
                     create_report: document.getElementById('create-report-check').checked,
-                    // Presentation 模式用 (v53 新參數)
+                    create_ppt: document.getElementById('create-ppt-check').checked,
+                    style: document.getElementById('consult-style').value, // 顧問模式用文字輸入 (彈性)
+                    length: document.getElementById('consult-length').value
+                };
+            } else if (payload.mode === 'presentation') {
+                payload.options = {
                     length: document.getElementById('ppt-length').value,
                     density: document.getElementById('ppt-density').value,
-                    theme: document.getElementById('ppt-theme').value,
+                    theme: document.getElementById('ppt-theme').value, // 純簡報模式用選單 (精準)
                     use_ai_image: document.getElementById('ppt-ai-img').checked
-                }
-            };
+                };
+            }
 
             const tempFile = activeFile; input.value = ''; clearFile();
             if(tempFile) {
@@ -177,12 +199,10 @@
                 payload.mime_type = tempFile.type;
             }
 
-            // 動態 Loading 文字
             let loadTxt = "AI Working...";
             if (payload.mode === 'search') loadTxt = "Consulting...";
-            if (payload.mode === 'presentation') loadTxt = "Rendering Slides...";
+            if (payload.mode === 'presentation') loadTxt = "Rendering Geometry...";
             if (payload.mode === 'drawing') loadTxt = "Painting...";
-            
             setLoading(true, loadTxt);
 
             try {
@@ -192,7 +212,7 @@
                     addMessage('ai', data.reply, { model: data.model, image: data.image, mime: data.mime });
                     fetchHistoryList();
                 } else { addMessage('ai', "🚨 Error: " + data.error); }
-            } catch (e) { addMessage('ai', "❌ 連線超時，請檢查網路後重試"); }
+            } catch (e) { addMessage('ai', "❌ 連線超時，請檢查網路"); }
             finally { setLoading(false); }
         }
 
@@ -233,15 +253,9 @@
         function newChat() { sessId = "UID_" + Date.now(); localStorage.setItem('ANYGEM_USER_ID', sessId); chatWindow.innerHTML = ''; fetchHistoryList(); }
         
         async function fetchHistoryList() {
-            // 加入 Timeout 防止卡死
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000);
+            const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), 8000);
             try {
-                const res = await fetch(GAS_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ mode: 'system', action: 'get_session_list' }),
-                    signal: controller.signal
-                });
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'get_session_list' }), signal: controller.signal });
                 clearTimeout(timeoutId);
                 const data = await res.json();
                 const list = document.getElementById('history-list'); list.innerHTML = '';
@@ -252,7 +266,7 @@
                     d.innerHTML = `<span onclick="loadSession('${s.id}')" class="truncate flex-1">${s.title}</span><i onclick="deleteChat('${s.id}')" class="fas fa-trash ml-2 opacity-50 hover:text-red-400"></i>`;
                     list.appendChild(d);
                 });
-            } catch(e){ console.log("History load error"); }
+            } catch(e){}
         }
         
         async function loadSession(id) { sessId = id; chatWindow.innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-spin text-emerald-500"></i></div>'; const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'load_session', session_id: id }) }); const data = await res.json(); chatWindow.innerHTML=''; data.logs.forEach(l => addMessage(l.role, l.text)); }
