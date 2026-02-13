@@ -1,0 +1,5 @@
+{
+  "name": "anyGem Next",
+  "description": "A high-performance, AI-native workspace inspired by Felo and Perplexity. Features a split-view interface (Chat + Canvas), modern React architecture, and an optimized Google Apps Script backend.",
+  "requestFramePermissions": []
+}
