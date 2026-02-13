@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>anyGem v55.0 : Hybrid Presentation Engine</title>
+    <title>anyGem v56.0 : Smart Content-Aware Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -47,7 +47,7 @@
             <button onclick="newChat()" class="btn-primary" style="width: 100%;"><i class="fas fa-plus"></i> 新增對話</button>
         </div>
         <div id="history-list" style="flex: 1; overflow-y: auto; padding: 10px;"><div style="text-align: center; font-size: 12px; color: #64748b; margin-top: 20px;">載入紀錄中...</div></div>
-        <div style="padding: 15px; text-align: center; font-size: 10px; color: #475569; border-top: 1px solid #1e293b;">ANYGEM V55.0</div>
+        <div style="padding: 15px; text-align: center; font-size: 10px; color: #475569; border-top: 1px solid #1e293b;">ANYGEM V56.0</div>
     </aside>
     <div id="overlay" onclick="toggleSidebar()" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:40;display:none;"></div>
     <div class="main-content">
@@ -55,7 +55,7 @@
             <div id="top-bar">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;" class="md:hidden"><i class="fas fa-bars"></i></button>
-                    <span style="font-weight:900; font-style:italic; font-size:18px;">anyGem <span style="color:var(--accent); font-size:12px;">v55</span></span>
+                    <span style="font-weight:900; font-style:italic; font-size:18px;">anyGem <span style="color:var(--accent); font-size:12px;">v56</span></span>
                 </div>
                 <select id="mode-select" onchange="updateUI()" style="width: auto; font-size: 12px; font-weight: bold;">
                     <option value="chat">💬 智能助理</option>
@@ -115,7 +115,7 @@
             </div>
         </header>
 
-        <main id="chat-window"><div class="msg-row ai"><div class="msg-bubble">👋 <b>anyGem v55.0</b> 簡報引擎大升級！<br>現在支援三種生成模式：<br>1. <b>混合模式</b>：圖文並茂，最佳推薦。<br>2. <b>純幾何</b>：速度快，Gamma 風格。<br>3. <b>純 AI 圖</b>：視覺衝擊，全圖背景。<br><i>(請在上方選單設定)</i></div></div></main>
+        <main id="chat-window"><div class="msg-row ai"><div class="msg-bubble">👋 <b>anyGem v56.0</b> 簡報引擎大升級！<br>• <b>自動版型</b>：AI 會根據內容自動選用流程圖、對比圖。<br>• <b>混合模式</b>：支援圖文並茂。<br>• <b>原生幾何</b>：免費、高清、可編輯。<br><i>(請在上方選單設定)</i></div></div></main>
         <div id="file-preview-bar" style="display:none;position:absolute;bottom:90px;left:20px;right:20px;background:#1e293b;padding:10px;border-radius:10px;border:1px solid #10b981;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:10px;"><div style="width:30px;height:30px;background:#0f172a;display:flex;justify-content:center;align-items:center;border-radius:5px;"><i class="fas fa-file text-emerald-500"></i></div><div style="display:flex;flex-direction:column;"><span id="file-name-label" style="font-size:12px;font-weight:bold;">File</span><span style="font-size:9px;color:#10b981;">Ready</span></div></div><button onclick="clearFile()" style="background:none;border:none;color:#94a3b8;cursor:pointer;">✕</button></div>
         <footer>
             <input type="file" id="file-input" style="display:none;">
