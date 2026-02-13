@@ -1,186 +1,416 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>anyGem v55.0 : Hybrid Presentation Engine</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>anyGem Next</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <!-- FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel (for compiling JSX in browser) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Marked (for Markdown parsing) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+    
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              background: '#0f172a',
+              surface: '#1e293b',
+              primary: '#10b981',
+              accent: '#34d399',
+            },
+            animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
+            keyframes: { fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
+          }
+        }
+      }
+    </script>
     <style>
-        :root { --bg-dark: #020617; --bg-panel: #1e293b; --accent: #10b981; --text: #e2e8f0; }
-        body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-dark); color: var(--text); overflow: hidden; display: flex; height: 100vh; width: 100vw; }
-        #sidebar { width: 260px; background-color: #0f172a; border-right: 1px solid #1e293b; display: flex; flex-direction: column; z-index: 50; transition: transform 0.3s; }
-        @media (max-width: 768px) { #sidebar { position: fixed; height: 100%; transform: translateX(-100%); } #sidebar.open { transform: translateX(0); } }
-        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; height: 100%; width: 100%; }
-        .glass { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 15px; }
-        .btn-primary { background-color: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center; }
-        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
-        .btn-primary:disabled { opacity: 0.5; cursor: wait; }
-        select, input[type="text"], input[type="number"], textarea { background: #334155; color: white; border: 1px solid #475569; padding: 8px; border-radius: 6px; outline: none; width: 100%; box-sizing: border-box; }
-        select:focus, input:focus, textarea:focus { border-color: var(--accent); }
-        #search-options, #ppt-panel, #report-panel { background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 15px; margin-top: 10px; display: none; }
-        #search-options.active, #ppt-panel.active, #report-panel.active { display: block; animation: slideDown 0.3s ease-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        #chat-window { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; padding-bottom: 80px; }
-        .msg-row { display: flex; margin-bottom: 20px; }
-        .msg-row.user { justify-content: flex-end; }
-        .msg-bubble { max-width: 80%; padding: 15px; border-radius: 12px; line-height: 1.6; font-size: 14px; position: relative; word-wrap: break-word; }
-        .msg-row.user .msg-bubble { background-color: #047857; color: white; border-top-right-radius: 2px; }
-        .msg-row.ai .msg-bubble { background-color: var(--bg-panel); border: 1px solid #334155; border-top-left-radius: 2px; }
-        .msg-bubble img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
-        .copy-btn { margin-top: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 5px; float: right; transition: all 0.2s; }
-        .copy-btn:hover { background: rgba(16, 185, 129, 0.2); color: var(--accent); border-color: var(--accent); }
-        footer { padding: 15px; background: rgba(2, 6, 23, 0.95); border-top: 1px solid #1e293b; position: absolute; bottom: 0; width: 100%; display: flex; gap: 10px; align-items: flex-end; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .loader { text-align: center; color: var(--accent); font-size: 12px; font-weight: bold; margin: 10px 0; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .history-item { padding: 10px; cursor: pointer; border-radius: 6px; font-size: 13px; color: #94a3b8; display: flex; justify-content: space-between; margin-bottom: 2px; }
-        .history-item:hover { background: rgba(255,255,255,0.05); color: white; }
-        .history-item.active { background: rgba(16, 185, 129, 0.2); color: var(--accent); border: 1px solid rgba(16, 185, 129, 0.2); }
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+      ::-webkit-scrollbar-thumb:hover { background: #475569; }
+      body { background-color: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif; }
+      
+      /* Markdown Styles */
+      .markdown-body img { max-width: 100%; border-radius: 8px; margin: 10px 0; border: 1px solid #334155; }
+      .markdown-body pre { background: #0f172a; padding: 12px; border-radius: 6px; overflow-x: auto; margin: 10px 0; border: 1px solid #334155; }
+      .markdown-body code { font-family: monospace; background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 3px; color: #e2e8f0; font-size: 0.9em; }
+      .markdown-body pre code { background: transparent; padding: 0; color: #a5b4fc; }
+      .markdown-body a { color: #34d399; text-decoration: none; border-bottom: 1px dashed #34d399; }
+      .markdown-body a:hover { border-bottom-style: solid; }
+      .markdown-body ul { list-style-type: disc; padding-left: 20px; margin: 10px 0; }
+      .markdown-body ol { list-style-type: decimal; padding-left: 20px; margin: 10px 0; }
+      .markdown-body h1 { font-size: 1.5em; font-weight: bold; margin-top: 20px; margin-bottom: 10px; color: white; border-bottom: 1px solid #334155; padding-bottom: 5px; }
+      .markdown-body h2 { font-size: 1.3em; font-weight: bold; margin-top: 15px; margin-bottom: 10px; color: white; }
+      .markdown-body h3 { font-size: 1.1em; font-weight: bold; margin-top: 10px; margin-bottom: 5px; color: #e2e8f0; }
+      .markdown-body blockquote { border-left: 4px solid #10b981; padding-left: 10px; color: #94a3b8; margin: 10px 0; font-style: italic; }
+      .markdown-body table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+      .markdown-body th, .markdown-body td { border: 1px solid #334155; padding: 8px; text-align: left; }
+      .markdown-body th { background-color: #1e293b; color: #10b981; }
     </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react-markdown": "https://esm.sh/react-markdown@^10.1.0"
+  }
+}
+</script>
 </head>
 <body>
-    <aside id="sidebar">
-        <div style="padding: 20px; border-bottom: 1px solid #1e293b;">
-            <button onclick="newChat()" class="btn-primary" style="width: 100%;"><i class="fas fa-plus"></i> 新增對話</button>
-        </div>
-        <div id="history-list" style="flex: 1; overflow-y: auto; padding: 10px;"><div style="text-align: center; font-size: 12px; color: #64748b; margin-top: 20px;">載入紀錄中...</div></div>
-        <div style="padding: 15px; text-align: center; font-size: 10px; color: #475569; border-top: 1px solid #1e293b;">ANYGEM V55.0</div>
-    </aside>
-    <div id="overlay" onclick="toggleSidebar()" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:40;display:none;"></div>
-    <div class="main-content">
-        <header class="glass">
-            <div id="top-bar">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;" class="md:hidden"><i class="fas fa-bars"></i></button>
-                    <span style="font-weight:900; font-style:italic; font-size:18px;">anyGem <span style="color:var(--accent); font-size:12px;">v55</span></span>
-                </div>
-                <select id="mode-select" onchange="updateUI()" style="width: auto; font-size: 12px; font-weight: bold;">
-                    <option value="chat">💬 智能助理</option>
-                    <option value="search">🌍 深度研究</option>
-                    <option value="report">📝 專業研報</option>
-                    <option value="presentation">📊 智能簡報</option>
-                    <option value="drawing">🎨 藝術生圖</option>
-                </select>
-            </div>
-            
-            <div id="search-options"><div style="font-size:11px; color:#94a3b8;"><i class="fas fa-info-circle"></i> 文字顧問諮詢模式。</div></div>
-            <div id="report-panel"><div class="grid-2"><div><label style="font-size:9px; color:#10b981; font-weight:bold; display:block; margin-bottom:4px;">研報風格</label><input type="text" id="report-style" placeholder="自定義，如：學術嚴謹、幽默風趣..."></div><div style="display:flex; align-items:center;"><span style="font-size:10px; color:#64748b;">將自動生成 Google Doc</span></div></div></div>
-            
-            <div id="ppt-panel">
-                <div class="grid-4" style="margin-bottom: 8px;">
-                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">生成模式</label>
-                        <select id="ppt-mode">
-                            <option value="hybrid">✨ 混合 (圖+文)</option>
-                            <option value="geometric">📐 純幾何 (Gamma)</option>
-                            <option value="ai_visual">🎨 純 AI 圖像</option>
-                        </select>
-                    </div>
-                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">內容深度</label>
-                        <select id="ppt-density">
-                            <option value="detailed">📚 仔細 (詳細內容)</option>
-                            <option value="brief">⚡ 綱要 (重點條列)</option>
-                        </select>
-                    </div>
-                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">色系搭配</label>
-                        <select id="ppt-theme">
-                            <option value="modern_blue">🔵 科技藍</option>
-                            <option value="warm_orange">🟠 溫暖橘</option>
-                            <option value="forest_green">🟢 森林綠</option>
-                            <option value="dark_cyber">⚫ 暗黑系</option>
-                        </select>
-                    </div>
-                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">預計頁數</label>
-                        <input type="number" id="ppt-length" value="6" min="3" max="20">
-                    </div>
-                </div>
-                <div class="grid-2">
-                    <div>
-                        <label style="font-size:9px; color:#10b981; font-weight:bold;">視覺風格 (AI 建議)</label>
-                        <select id="ppt-style-preset" onchange="checkCustomStyle()">
-                            <option value="auto">🤖 AI 自動推薦</option>
-                            <option value="minimalist">Minimalist (極簡白)</option>
-                            <option value="corporate">Corporate (商務專業)</option>
-                            <option value="creative">Creative (創意手繪)</option>
-                            <option value="custom">✏️ 自行定義...</option>
-                        </select>
-                    </div>
-                    <div id="custom-style-container" style="display:none;">
-                        <label style="font-size:9px; color:#10b981; font-weight:bold;">自定義風格描述</label>
-                        <input type="text" id="ppt-style-custom" placeholder="例如：Cyberpunk, 水彩風...">
-                    </div>
-                </div>
-            </div>
-        </header>
-        <main id="chat-window"><div class="msg-row ai"><div class="msg-bubble">👋 <b>anyGem v55.0</b> 簡報引擎大升級！<br>現在支援三種生成模式：<br>1. <b>混合模式</b>：圖文並茂，最佳推薦。<br>2. <b>純幾何</b>：速度快，Gamma 風格。<br>3. <b>純 AI 圖</b>：視覺衝擊，全圖背景。<br><i>(請在上方選單設定)</i></div></div></main>
-        <div id="file-preview-bar" style="display:none;position:absolute;bottom:90px;left:20px;right:20px;background:#1e293b;padding:10px;border-radius:10px;border:1px solid #10b981;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:10px;"><div style="width:30px;height:30px;background:#0f172a;display:flex;justify-content:center;align-items:center;border-radius:5px;"><i class="fas fa-file text-emerald-500"></i></div><div style="display:flex;flex-direction:column;"><span id="file-name-label" style="font-size:12px;font-weight:bold;">File</span><span style="font-size:9px;color:#10b981;">Ready</span></div></div><button onclick="clearFile()" style="background:none;border:none;color:#94a3b8;cursor:pointer;">✕</button></div>
-        <footer>
-            <input type="file" id="file-input" style="display:none;">
-            <button onclick="document.getElementById('file-input').click()" style="background:#1e293b;border:1px solid #334155;color:#10b981;width:50px;height:50px;border-radius:10px;cursor:pointer;"><i class="fas fa-paperclip" style="font-size:18px;"></i></button>
-            <div style="flex:1;"><textarea id="user-input" rows="1" placeholder="輸入訊息..." style="width:100%;height:50px;padding:12px;resize:none;"></textarea></div>
-            <button onclick="handleSend()" id="send-btn" class="btn-primary" style="height:50px;padding:0 25px;">SEND <i class="fas fa-paper-plane"></i></button>
-        </footer>
-    </div>
-    <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; // ⚠️ 請務必更換！
-        let sessId = localStorage.getItem('ANYGEM_USER_ID') || "UID_" + Date.now(); localStorage.setItem('ANYGEM_USER_ID', sessId);
-        const chatWindow = document.getElementById('chat-window'), input = document.getElementById('user-input'), btn = document.getElementById('send-btn'), modeSelect = document.getElementById('mode-select'), searchOptions = document.getElementById('search-options'), reportPanel = document.getElementById('report-panel'), pptPanel = document.getElementById('ppt-panel'), previewBar = document.getElementById('file-preview-bar');
-        let activeFile = null;
-        function updateUI() {
-            const m = modeSelect.value;
-            searchOptions.className = m === 'search' ? 'active' : ''; reportPanel.className = m === 'report' ? 'active' : ''; pptPanel.className = m === 'presentation' ? 'active' : '';
-            if(m==='search') input.placeholder = "輸入主題..."; else if(m==='report') input.placeholder = "輸入主題生成文件..."; else if(m==='presentation') input.placeholder = "貼上文章，生成簡報..."; else input.placeholder = "輸入訊息...";
-            input.focus();
-        }
-        function checkCustomStyle() {
-            const val = document.getElementById('ppt-style-preset').value;
-            document.getElementById('custom-style-container').style.display = val === 'custom' ? 'block' : 'none';
-        }
-        async function handleSend() {
-            const text = input.value.trim(); if(!text && !activeFile) return;
-            addMessage('user', text, { fileName: activeFile?.name });
-            const payload = { message: text, session_id: sessId, mode: modeSelect.value, options: {} };
-            
-            if (payload.mode === 'report') {
-                payload.options = { style: document.getElementById('report-style').value };
-            } else if (payload.mode === 'presentation') {
-                const preset = document.getElementById('ppt-style-preset').value;
-                const custom = document.getElementById('ppt-style-custom').value;
-                payload.options = { 
-                    length: document.getElementById('ppt-length').value, 
-                    density: document.getElementById('ppt-density').value, 
-                    theme: document.getElementById('ppt-theme').value, 
-                    ppt_mode: document.getElementById('ppt-mode').value, // 新增：混合/幾何/AI
-                    visual_style: preset === 'custom' ? custom : preset // 新增：視覺風格
-                };
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // --- 1. CONFIGURATION & TYPES ---
+        
+        // ⚠️ 重要：請在此處填入您 Google Apps Script 部署後的 Web App URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec";
+
+        const AppMode = {
+            CHAT: 'chat',
+            SEARCH: 'search',
+            REPORT: 'report',
+            PRESENTATION: 'presentation',
+            DRAWING: 'drawing'
+        };
+
+        const PPT_THEMES = [
+          { value: "modern_blue", label: "🔵 科技藍 (Tech Blue)" },
+          { value: "warm_orange", label: "🟠 溫暖橘 (Warm Orange)" },
+          { value: "forest_green", label: "🟢 森林綠 (Forest Green)" },
+          { value: "dark_cyber", label: "⚫ 暗黑系 (Dark Cyber)" },
+        ];
+
+        const PPT_MODES = [
+          { value: "hybrid", label: "✨ 混合 (Hybrid)" },
+          { value: "geometric", label: "📐 純幾何 (Geometric)" },
+          { value: "ai_visual", label: "🎨 純 AI 圖像 (Visual)" },
+        ];
+
+        // --- 2. API SERVICE ---
+
+        const callBackend = async (payload) => {
+            try {
+                // CORS Hack: Use text/plain to avoid OPTIONS preflight
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload),
+                });
+                return await response.json();
+            } catch (error) {
+                console.error("API Error:", error);
+                return { status: 'error', error: error.message || "Network Error" };
             }
-            const tempFile = activeFile; input.value = ''; clearFile();
-            if(tempFile) { setLoading(true, "Uploading..."); const base64 = await toBase64(tempFile); payload.file_data = base64.split(',')[1]; payload.mime_type = tempFile.type; }
-            let loadTxt = "Processing..."; if(payload.mode==='presentation') loadTxt="Generating Slides...";
-            setLoading(true, loadTxt);
-            try { const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); const data = await res.json(); if(data.status === "success") { addMessage('ai', data.reply, { model: data.model, image: data.image, mime: data.mime }); fetchHistoryList(); } else { addMessage('ai', "🚨 Error: " + (data.error || "Unknown")); } } catch (e) { addMessage('ai', "❌ 連線失敗"); } finally { setLoading(false); }
-        }
-        function addMessage(role, text, meta = null) {
-            const row = document.createElement('div'); row.className = `msg-row ${role}`;
-            const bubble = document.createElement('div'); bubble.className = 'msg-bubble';
-            if(meta?.fileName) bubble.innerHTML += `<div style="font-size:11px;margin-bottom:5px;opacity:0.8;"><i class="fas fa-file"></i> ${meta.fileName}</div>`;
-            if(meta?.image) bubble.innerHTML += `<img src="data:${meta.mime||'image/png'};base64,${meta.image}">`;
-            if(window.marked) bubble.innerHTML += marked.parse(text||""); else bubble.innerText += text;
-            if(role==='ai'){const c=document.createElement('button');c.className='copy-btn';c.innerHTML='<i class="fas fa-copy"></i>';c.onclick=()=>{navigator.clipboard.writeText(text);};bubble.appendChild(c);}
-            row.appendChild(bubble); chatWindow.appendChild(row); chatWindow.scrollTop = chatWindow.scrollHeight;
-        }
-        document.getElementById('file-input').onchange = (e) => { activeFile = e.target.files[0]; if(!activeFile) return; previewBar.style.display = 'flex'; document.getElementById('file-name-label').innerText = activeFile.name; };
-        function toggleSidebar() { const sb=document.getElementById('sidebar'),ov=document.getElementById('overlay'); if(sb.style.transform==='translateX(0px)'){sb.style.transform='';ov.style.display='none';}else{sb.style.transform='translateX(0px)';ov.style.display='block';} }
-        function newChat() { sessId = "UID_" + Date.now(); localStorage.setItem('ANYGEM_USER_ID', sessId); chatWindow.innerHTML = ''; fetchHistoryList(); }
-        async function fetchHistoryList() { const c = new AbortController(); setTimeout(()=>c.abort(),8000); try{ const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'get_session_list' }), signal:c.signal }); const data = await res.json(); const list = document.getElementById('history-list'); list.innerHTML = ''; if(data.sessions&&data.sessions.length>0){data.sessions.forEach(s=>{const d=document.createElement('div');d.className=`history-item ${s.id===sessId?'active':''}`;d.innerHTML=`<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:180px;">${s.title}</span><i class="fas fa-trash" onclick="deleteChat('${s.id}')"></i>`;d.onclick=(e)=>{if(e.target.tagName!=='I')loadSession(s.id);};list.appendChild(d);});}else{list.innerHTML='<div style="text-align:center;font-size:12px;color:#64748b;margin-top:10px;">尚無紀錄</div>';}}catch(e){} }
-        async function loadSession(id) { sessId=id;chatWindow.innerHTML='<div class="loader">Loading...</div>';const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({mode:'system',action:'load_session',session_id:id})});const data=await res.json();chatWindow.innerHTML='';data.logs.forEach(l=>addMessage(l.role,l.text)); }
-        async function deleteChat(id) { if(confirm("刪除此對話？")){await fetch(GAS_URL,{method:'POST',body:JSON.stringify({mode:'system',action:'delete_session',session_id:id})});fetchHistoryList();} }
-        function clearFile() { activeFile=null;previewBar.style.display='none';document.getElementById('file-input').value=''; }
-        function toBase64(f) { return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);}); }
-        function setLoading(l,t) { btn.disabled=l;if(l){const d=document.createElement('div');d.id='loader';d.className='loader';d.innerHTML=`<i class="fas fa-bolt"></i> ${t.toUpperCase()}`;chatWindow.appendChild(d);chatWindow.scrollTop=chatWindow.scrollHeight;}else{document.getElementById('loader')?.remove();} }
-        updateUI(); fetchHistoryList();
+        };
+
+        const sendMessage = (payload) => callBackend(payload);
+        const fetchSessions = () => callBackend({ mode: 'system', action: 'get_session_list' });
+        const loadSessionApi = (sessionId) => callBackend({ mode: 'system', action: 'load_session', session_id: sessionId });
+
+        // --- 3. COMPONENTS ---
+
+        // Sidebar Component
+        const Sidebar = ({ isOpen, sessions, currentSessionId, onNewChat, onSelectSession, onDeleteSession, isCollapsed, toggleCollapse }) => {
+            
+            const groupedSessions = useMemo(() => {
+                const today = new Date();
+                const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+                const sevenDaysAgo = new Date(today); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+                const groups = { today: [], yesterday: [], previous7: [], older: [] };
+
+                sessions.forEach(s => {
+                    const d = new Date(s.timestamp || Date.now());
+                    if (d.toDateString() === today.toDateString()) groups.today.push(s);
+                    else if (d.toDateString() === yesterday.toDateString()) groups.yesterday.push(s);
+                    else if (d > sevenDaysAgo) groups.previous7.push(s);
+                    else groups.older.push(s);
+                });
+                return groups;
+            }, [sessions]);
+
+            const renderGroup = (title, list) => {
+                if (list.length === 0) return null;
+                return (
+                    <div className="mb-4">
+                        {!isCollapsed && <div className="text-[11px] font-bold text-slate-500 uppercase px-4 mb-2 tracking-wider animate-fade-in">{title}</div>}
+                        {list.map(s => (
+                            <div 
+                                key={s.id} 
+                                onClick={() => onSelectSession(s.id)}
+                                className={`group relative flex items-center px-3 py-2 rounded-full cursor-pointer transition-all mx-2 mb-1 
+                                    ${s.id === currentSessionId ? 'bg-slate-700/50 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}
+                                `}
+                                title={isCollapsed ? s.title : ''}
+                            >
+                                <div className="min-w-[20px] flex justify-center"><i className="far fa-message text-sm opacity-70"></i></div>
+                                {!isCollapsed && (
+                                    <>
+                                        <div className="ml-3 truncate text-sm flex-1">{s.title || "未命名對話"}</div>
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); onDeleteSession(s.id); }}
+                                            className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 text-slate-500 transition-opacity absolute right-2 bg-slate-800 shadow-lg rounded-full"
+                                        >
+                                            <i className="fas fa-times"></i>
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                );
+            };
+
+            const sidebarWidth = isCollapsed ? 'w-[68px]' : 'w-[280px]';
+
+            return (
+                <aside className={`${sidebarWidth} h-full bg-[#0f172a] flex flex-col transition-all duration-300 ease-in-out border-r border-slate-800 z-50 fixed md:relative ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+                    <div className="p-3 pt-4 flex flex-col gap-4">
+                        <div className="flex items-center justify-between px-2">
+                            <button onClick={toggleCollapse} className="p-2 text-slate-400 hover:text-white rounded-full hover:bg-slate-800 transition-colors hidden md:block" title={isCollapsed ? "展開側邊欄" : "收合側邊欄"}>
+                                <i className="fas fa-bars text-lg"></i>
+                            </button>
+                            {!isCollapsed && <div className="text-slate-500 text-xs font-mono whitespace-nowrap overflow-hidden">ANYGEM v60.2</div>}
+                            <button onClick={() => {}} className="md:hidden p-2 text-slate-400" ><i className="fas fa-times"></i></button>
+                        </div>
+                        
+                        <button 
+                            onClick={onNewChat}
+                            className={`flex items-center gap-3 bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all rounded-full p-3 ${isCollapsed ? 'justify-center w-10 h-10 mx-auto' : 'px-4 mx-2'}`}
+                            title="新增對話"
+                        >
+                            <i className="fas fa-plus text-primary"></i>
+                            {!isCollapsed && <span className="font-medium text-sm whitespace-nowrap">新增對話</span>}
+                        </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden py-2 custom-scrollbar">
+                        {renderGroup("今天", groupedSessions.today)}
+                        {renderGroup("昨天", groupedSessions.yesterday)}
+                        {renderGroup("過去 7 天", groupedSessions.previous7)}
+                        {renderGroup("更早之前", groupedSessions.older)}
+                        {sessions.length === 0 && !isCollapsed && <div className="text-center text-slate-600 text-xs mt-10">尚無歷史紀錄</div>}
+                    </div>
+
+                    <div className="p-3 border-t border-slate-800">
+                         <div className={`flex items-center gap-3 p-2 rounded-full hover:bg-slate-800 cursor-pointer transition-colors ${isCollapsed ? 'justify-center' : ''}`}>
+                             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-blue-500 flex items-center justify-center text-white font-bold text-xs shrink-0">A</div>
+                             {!isCollapsed && (
+                                 <div className="flex flex-col overflow-hidden">
+                                     <span className="text-sm text-slate-200 font-medium truncate">User</span>
+                                     <span className="text-[10px] text-slate-500 truncate">Free Plan</span>
+                                 </div>
+                             )}
+                         </div>
+                    </div>
+                </aside>
+            );
+        };
+
+        // MessageBubble Component
+        const MessageBubble = ({ message }) => {
+            const isUser = message.role === 'user';
+            
+            // 使用 marked 庫將 Markdown 轉換為 HTML
+            const htmlContent = useMemo(() => {
+                if (!message.text) return "";
+                return marked.parse(message.text);
+            }, [message.text]);
+
+            return (
+                <div className={`flex w-full mb-6 ${isUser ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`relative max-w-[85%] md:max-w-[75%] rounded-2xl p-4 md:p-5 text-sm md:text-base leading-relaxed ${isUser ? 'bg-emerald-700 text-white rounded-tr-sm' : 'bg-slate-800 border border-slate-700 text-slate-200 rounded-tl-sm shadow-xl'}`}>
+                        {message.meta?.fileName && <div className="flex items-center gap-2 mb-3 bg-black/20 p-2 rounded text-xs"><i className="fas fa-paperclip"></i><span className="font-mono">{message.meta.fileName}</span></div>}
+                        
+                        <div className="markdown-body">
+                            {message.meta?.image && <img src={`data:${message.meta.mime};base64,${message.meta.image}`} alt="Generated" className="rounded-lg mb-4 max-w-full border border-slate-700"/>}
+                            
+                            {/* Render HTML content */}
+                            <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+                        </div>
+                        
+                        {!isUser && <div className="mt-3 flex items-center justify-between border-t border-slate-700/50 pt-2"><div className="text-[10px] text-slate-500">{message.meta?.model || "anyGem AI"}</div><button onClick={() => navigator.clipboard.writeText(message.text)} className="text-slate-500 hover:text-white text-xs transition-colors"><i className="fas fa-copy"></i></button></div>}
+                    </div>
+                </div>
+            );
+        };
+
+        // Canvas Component
+        const Canvas = ({ isOpen, mode, pptOptions, setPptOptions, reportStyle, setReportStyle, activeFile }) => {
+            return (
+                <div className={`hidden lg:flex flex-col h-full bg-surface border-slate-800 transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'w-[350px] border-l p-6 opacity-100' : 'w-0 p-0 opacity-0 border-none'}`}>
+                    <div className="min-w-[300px]"> {/* Container to prevent content squishing during transition */}
+                        {mode === AppMode.CHAT && !activeFile ? (
+                            <div className="flex flex-col items-center justify-center h-[80vh] text-slate-600">
+                                <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-6"><i className="fas fa-layer-group text-3xl text-slate-700"></i></div>
+                                <h3 className="text-base font-medium text-slate-500">工作區空白</h3>
+                                <p className="text-center text-xs mt-2 max-w-xs px-4">請切換至「簡報」或「研報」模式以啟用進階設定。</p>
+                            </div>
+                        ) : (
+                            <>
+                                {activeFile && (
+                                    <div className="mb-8 p-4 bg-slate-900 rounded-xl border border-slate-700 animate-fade-in">
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center text-emerald-500"><i className="fas fa-file-alt text-xl"></i></div>
+                                            <div><div className="text-sm font-bold text-white break-all line-clamp-2">{activeFile.name}</div><div className="text-xs text-slate-500 mt-1">準備就緒</div></div>
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="animate-fade-in">
+                                    {mode === AppMode.PRESENTATION && (
+                                        <div className="space-y-6">
+                                            <div className="flex items-center gap-2 mb-2"><i className="fas fa-sliders-h text-primary"></i><h2 className="text-lg font-bold text-white">簡報引擎設定</h2></div>
+                                            <div className="space-y-4">
+                                                <div><label className="text-xs font-bold text-slate-400 uppercase mb-1 block">生成模式</label><select value={pptOptions.pptMode} onChange={(e) => setPptOptions({...pptOptions, pptMode: e.target.value})} className="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg focus:border-primary outline-none text-sm">{PPT_MODES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}</select></div>
+                                                <div><label className="text-xs font-bold text-slate-400 uppercase mb-1 block">配色主題</label><div className="grid grid-cols-2 gap-2">{PPT_THEMES.map(t => <button key={t.value} onClick={() => setPptOptions({...pptOptions, theme: t.value})} className={`p-2 rounded-lg border text-xs text-left transition-all ${pptOptions.theme === t.value ? 'bg-primary/20 border-primary text-white' : 'bg-slate-900 border-slate-700 text-slate-400'}`}>{t.label.split(' ')[1]}</button>)}</div></div>
+                                                <div className="grid grid-cols-2 gap-4"><div><label className="text-xs font-bold text-slate-400 uppercase mb-1 block">頁數</label><input type="number" min="3" max="20" value={pptOptions.length} onChange={(e) => setPptOptions({...pptOptions, length: parseInt(e.target.value)})} className="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded-lg focus:border-primary outline-none text-sm"/></div>
+                                                <div><label className="text-xs font-bold text-slate-400 uppercase mb-1 block">內容深度</label><select value={pptOptions.density} onChange={(e) => setPptOptions({...pptOptions, density: e.target.value})} className="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded-lg focus:border-primary outline-none text-sm"><option value="detailed">詳細內容</option><option value="brief">重點摘要</option></select></div></div>
+                                                <div><label className="text-xs font-bold text-slate-400 uppercase mb-1 block">視覺風格 (提示詞)</label><input type="text" placeholder="例如：Cyberpunk, 極簡風..." value={pptOptions.visualStyle} onChange={(e) => setPptOptions({...pptOptions, visualStyle: e.target.value})} className="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded-lg focus:border-primary outline-none text-sm"/></div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {mode === AppMode.REPORT && (
+                                        <div className="space-y-6">
+                                            <div className="flex items-center gap-2 mb-2"><i className="fas fa-file-contract text-primary"></i><h2 className="text-lg font-bold text-white">研報設定</h2></div>
+                                            <div><label className="text-xs font-bold text-slate-400 uppercase mb-1 block">語氣與風格</label><input type="text" value={reportStyle} onChange={(e) => setReportStyle(e.target.value)} placeholder="例如：學術嚴謹、商業分析..." className="w-full bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg focus:border-primary outline-none text-sm"/></div>
+                                            <p className="text-xs text-slate-500">AI 將進行深度研究並生成 Google Doc 連結。</p>
+                                        </div>
+                                    )}
+                                    {mode === AppMode.SEARCH && (
+                                        <div className="mt-auto bg-blue-900/20 p-4 rounded-lg border border-blue-500/30"><h4 className="text-blue-400 font-bold text-sm mb-1"><i className="fas fa-globe"></i> 深度搜尋啟用中</h4><p className="text-xs text-blue-200/70">AI 將瀏覽多個來源以提供有依據的回答，並附上引用來源。</p></div>
+                                    )}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const [sidebarOpen, setSidebarOpen] = useState(false);
+            const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+            const [showRightPanel, setShowRightPanel] = useState(true);
+            const [mode, setMode] = useState(AppMode.CHAT);
+            const [input, setInput] = useState('');
+            const [messages, setMessages] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [activeFile, setActiveFile] = useState(null);
+            const [sessions, setSessions] = useState([]);
+            const [currentSessionId, setCurrentSessionId] = useState(localStorage.getItem('ANYGEM_USER_ID') || `UID_${Date.now()}`);
+            const [pptOptions, setPptOptions] = useState({ length: 6, density: 'detailed', theme: 'modern_blue', pptMode: 'hybrid', visualStyle: '', language: 'Traditional Chinese', audience: 'General' });
+            const [reportStyle, setReportStyle] = useState('Professional');
+            const messagesEndRef = useRef(null);
+            const fileInputRef = useRef(null);
+
+            useEffect(() => { localStorage.setItem('ANYGEM_USER_ID', currentSessionId); loadHistoryList(); if(messages.length===0) setMessages([{ id: 'welcome', role: 'ai', text: "👋 **歡迎使用 anyGem Next**\n\n我是您的 AI 智能助手。請選擇上方模式（聊天、搜尋、研報、簡報）開始使用。", timestamp: Date.now() }]); }, [currentSessionId]);
+            useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+            const loadHistoryList = async () => { const data = await fetchSessions(); if (data.sessions) setSessions(data.sessions); };
+            const handleNewChat = () => { const newId = `UID_${Date.now()}`; setCurrentSessionId(newId); setMessages([]); setMode(AppMode.CHAT); };
+            const loadSessionHandler = async (id) => { setCurrentSessionId(id); const data = await loadSessionApi(id); if(data.logs) setMessages(data.logs.map((l,i)=>({id:`${id}_${i}`, role:l.role, text:l.text, timestamp:Date.now()}))); };
+            const deleteSessionHandler = (id) => { setSessions(prev => prev.filter(s => s.id !== id)); };
+
+            const handleSend = async () => {
+                if (!input.trim() && !activeFile) return;
+                const userMsg = { id: Date.now().toString(), role: 'user', text: input, timestamp: Date.now(), meta: { fileName: activeFile?.name } };
+                setMessages(prev => [...prev, userMsg]);
+                setInput(''); setLoading(true);
+
+                let fileData = undefined;
+                if (activeFile) {
+                    fileData = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(activeFile);
+                    });
+                }
+
+                const payload = { message: userMsg.text, session_id: currentSessionId, mode: mode, file_data: fileData ? fileData.split(',')[1] : undefined, mime_type: activeFile?.type, options: { ...pptOptions, style: reportStyle } };
+                setActiveFile(null);
+                const response = await sendMessage(payload);
+                setLoading(false);
+
+                if (response.status === 'success') {
+                    setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'ai', text: response.reply || "完成。", timestamp: Date.now(), meta: { model: response.model, image: response.image, mime: response.mime } }]);
+                    loadHistoryList();
+                } else {
+                    setMessages(prev => [...prev, { id: Date.now().toString(), role: 'system', text: `🚨 錯誤: ${response.error || "未知錯誤"}`, timestamp: Date.now() }]);
+                }
+            };
+
+            return (
+                <div className="flex h-screen bg-slate-950 text-slate-200 font-sans overflow-hidden">
+                    <div className={`fixed inset-0 bg-black/50 z-40 transition-opacity ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'} md:hidden`} onClick={() => setSidebarOpen(false)} />
+                    
+                    <Sidebar 
+                        isOpen={sidebarOpen} 
+                        sessions={sessions} 
+                        currentSessionId={currentSessionId} 
+                        onNewChat={handleNewChat} 
+                        onSelectSession={loadSessionHandler} 
+                        onDeleteSession={deleteSessionHandler}
+                        isCollapsed={sidebarCollapsed}
+                        toggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+                    />
+                    
+                    <div className="flex-1 flex flex-col h-full relative">
+                        <header className="h-14 border-b border-slate-800 flex items-center px-4 justify-between bg-slate-900/50 backdrop-blur-sm z-10 transition-all">
+                            <div className="flex items-center gap-3">
+                                <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden text-slate-400 hover:text-white"><i className="fas fa-bars"></i></button>
+                                <div className="font-bold text-white tracking-wide">anyGem <span className="text-primary font-normal">Next</span></div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center bg-slate-800 rounded-lg p-1">{Object.values(AppMode).map((m) => <button key={m} onClick={() => setMode(m)} className={`px-3 py-1 rounded-md text-xs font-medium transition-all capitalize ${mode === m ? 'bg-primary text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}>{m === 'chat' ? '💬' : m === 'search' ? '🌍' : m === 'report' ? '📝' : m === 'presentation' ? '📊' : '🎨'} {m}</button>)}</div>
+                                <button 
+                                    onClick={() => setShowRightPanel(!showRightPanel)} 
+                                    className={`hidden lg:flex p-2 rounded-full hover:bg-slate-800 transition-colors ${showRightPanel ? 'text-primary' : 'text-slate-400'}`}
+                                    title={showRightPanel ? "隱藏工作區" : "顯示工作區"}
+                                >
+                                    <i className="fas fa-columns"></i>
+                                </button>
+                            </div>
+                        </header>
+                        <div className="flex-1 flex overflow-hidden">
+                            <div className="flex-1 flex flex-col relative transition-all duration-300">
+                                <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth"><div className="max-w-3xl mx-auto">{messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)}{loading && <div className="flex justify-start w-full mb-6 animate-pulse"><div className="bg-slate-800 rounded-2xl rounded-tl-sm p-4 text-slate-400 text-sm flex items-center gap-2"><i className="fas fa-circle-notch fa-spin text-primary"></i>處理中...</div></div>}<div ref={messagesEndRef} /></div></div>
+                                <div className="p-4 border-t border-slate-800 bg-slate-900/80 backdrop-blur-md">
+                                    <div className="max-w-3xl mx-auto relative">
+                                        {activeFile && <div className="absolute -top-12 left-0 bg-slate-800 text-slate-300 text-xs px-3 py-2 rounded-lg border border-slate-700 flex items-center gap-2 shadow-lg"><i className="fas fa-file"></i> {activeFile.name}<button onClick={() => setActiveFile(null)} className="hover:text-red-400"><i className="fas fa-times"></i></button></div>}
+                                        <div className="flex items-end gap-2 bg-slate-800/50 border border-slate-700 rounded-xl p-2 focus-within:border-primary/50 transition-all">
+                                            <button onClick={() => fileInputRef.current?.click()} className="p-3 text-slate-400 hover:text-white transition-colors"><i className="fas fa-paperclip"></i></button>
+                                            <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => setActiveFile(e.target.files[0])} />
+                                            <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} placeholder={`在 ${mode} 模式下輸入訊息...`} className="flex-1 bg-transparent border-none outline-none text-slate-200 text-sm resize-none py-3" rows={1} style={{ minHeight: '44px' }} />
+                                            <button onClick={handleSend} disabled={loading || (!input.trim() && !activeFile)} className="p-3 bg-primary hover:bg-emerald-600 text-white rounded-lg disabled:opacity-50 transition-all"><i className="fas fa-paper-plane"></i></button>
+                                        </div>
+                                        <div className="text-center mt-2 text-[10px] text-slate-600">AI 偶爾會犯錯，請核查重要資訊。</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <Canvas isOpen={showRightPanel} mode={mode} pptOptions={pptOptions} setPptOptions={setPptOptions} reportStyle={reportStyle} setReportStyle={setReportStyle} activeFile={activeFile} />
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 4. MOUNT APP
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
