@@ -2,186 +2,285 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>anyGem v55.0 : Hybrid Presentation Engine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>anyGem v55.1 : UI Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root { --bg-dark: #020617; --bg-panel: #1e293b; --accent: #10b981; --text: #e2e8f0; }
-        body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-dark); color: var(--text); overflow: hidden; display: flex; height: 100vh; width: 100vw; }
-        #sidebar { width: 260px; background-color: #0f172a; border-right: 1px solid #1e293b; display: flex; flex-direction: column; z-index: 50; transition: transform 0.3s; }
-        @media (max-width: 768px) { #sidebar { position: fixed; height: 100%; transform: translateX(-100%); } #sidebar.open { transform: translateX(0); } }
-        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; height: 100%; width: 100%; }
-        .glass { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 15px; }
-        .btn-primary { background-color: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center; }
-        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
-        .btn-primary:disabled { opacity: 0.5; cursor: wait; }
-        select, input[type="text"], input[type="number"], textarea { background: #334155; color: white; border: 1px solid #475569; padding: 8px; border-radius: 6px; outline: none; width: 100%; box-sizing: border-box; }
-        select:focus, input:focus, textarea:focus { border-color: var(--accent); }
-        #search-options, #ppt-panel, #report-panel { background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 15px; margin-top: 10px; display: none; }
-        #search-options.active, #ppt-panel.active, #report-panel.active { display: block; animation: slideDown 0.3s ease-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        #chat-window { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; padding-bottom: 80px; }
-        .msg-row { display: flex; margin-bottom: 20px; }
-        .msg-row.user { justify-content: flex-end; }
-        .msg-bubble { max-width: 80%; padding: 15px; border-radius: 12px; line-height: 1.6; font-size: 14px; position: relative; word-wrap: break-word; }
-        .msg-row.user .msg-bubble { background-color: #047857; color: white; border-top-right-radius: 2px; }
-        .msg-row.ai .msg-bubble { background-color: var(--bg-panel); border: 1px solid #334155; border-top-left-radius: 2px; }
-        .msg-bubble img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
-        .copy-btn { margin-top: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 5px; float: right; transition: all 0.2s; }
-        .copy-btn:hover { background: rgba(16, 185, 129, 0.2); color: var(--accent); border-color: var(--accent); }
-        footer { padding: 15px; background: rgba(2, 6, 23, 0.95); border-top: 1px solid #1e293b; position: absolute; bottom: 0; width: 100%; display: flex; gap: 10px; align-items: flex-end; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .loader { text-align: center; color: var(--accent); font-size: 12px; font-weight: bold; margin: 10px 0; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .history-item { padding: 10px; cursor: pointer; border-radius: 6px; font-size: 13px; color: #94a3b8; display: flex; justify-content: space-between; margin-bottom: 2px; }
-        .history-item:hover { background: rgba(255,255,255,0.05); color: white; }
-        .history-item.active { background: rgba(16, 185, 129, 0.2); color: var(--accent); border: 1px solid rgba(16, 185, 129, 0.2); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #020617; color: #cbd5e1; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeInUp 0.4s ease-out forwards; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
+        .sidebar-transition { transition: transform 0.3s ease-in-out; }
+        .glass { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        /* 🔥 關鍵修復：強制下拉選單選項使用深色背景，解決白字白底問題 */
+        select option {
+            background-color: #1e293b; /* 深灰藍色 */
+            color: #ffffff;
+            padding: 10px;
+        }
+
+        /* 面板動畫設定 */
+        #ppt-panel { display: none; margin-top: 1rem; padding: 1.25rem; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 1.5rem; background: rgba(16, 185, 129, 0.05); }
+        #ppt-panel.active { display: block; animation: fadeInUp 0.3s ease-out; }
+        
+        /* 深度研究的提示區塊 */
+        #search-badge { display: none; }
+        #search-badge.active { display: flex; animation: fadeInUp 0.3s ease-out; }
+
+        .history-item .delete-btn { opacity: 0; transition: opacity 0.2s; }
+        .history-item:hover .delete-btn { opacity: 1; }
     </style>
 </head>
-<body>
-    <aside id="sidebar">
-        <div style="padding: 20px; border-bottom: 1px solid #1e293b;">
-            <button onclick="newChat()" class="btn-primary" style="width: 100%;"><i class="fas fa-plus"></i> 新增對話</button>
+<body class="h-screen flex overflow-hidden">
+
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0f172a] border-r border-emerald-900/30 transform -translate-x-full md:translate-x-0 sidebar-transition flex flex-col shadow-2xl">
+        <div class="p-4 border-b border-white/5">
+            <button onclick="newChat()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95">
+                <i class="fas fa-plus"></i> 新增對話
+            </button>
         </div>
-        <div id="history-list" style="flex: 1; overflow-y: auto; padding: 10px;"><div style="text-align: center; font-size: 12px; color: #64748b; margin-top: 20px;">載入紀錄中...</div></div>
-        <div style="padding: 15px; text-align: center; font-size: 10px; color: #475569; border-top: 1px solid #1e293b;">ANYGEM V55.0</div>
+        <div class="flex-grow overflow-y-auto p-3 space-y-2" id="history-list"></div>
+        <div class="p-4 border-t border-white/5 text-[10px] text-center text-slate-500 font-mono uppercase tracking-widest">
+            anyGem v55.1 PRO
+        </div>
     </aside>
-    <div id="overlay" onclick="toggleSidebar()" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:40;display:none;"></div>
-    <div class="main-content">
-        <header class="glass">
-            <div id="top-bar">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;" class="md:hidden"><i class="fas fa-bars"></i></button>
-                    <span style="font-weight:900; font-style:italic; font-size:18px;">anyGem <span style="color:var(--accent); font-size:12px;">v55</span></span>
+
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden glass"></div>
+
+    <div class="flex-1 flex flex-col h-full relative md:ml-64 transition-all w-full">
+        
+        <header class="p-4 glass sticky top-0 z-40 shadow-xl">
+            <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 mb-2">
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <button onclick="toggleSidebar()" class="md:hidden text-white p-2 hover:bg-white/10 rounded-lg"><i class="fas fa-bars text-xl"></i></button>
+                    <span class="text-xl font-black text-white italic tracking-tighter uppercase">anyGem <span class="text-emerald-500 text-sm">v55.1</span></span>
                 </div>
-                <select id="mode-select" onchange="updateUI()" style="width: auto; font-size: 12px; font-weight: bold;">
-                    <option value="chat">💬 智能助理</option>
-                    <option value="search">🌍 深度研究</option>
-                    <option value="report">📝 專業研報</option>
-                    <option value="presentation">📊 智能簡報</option>
-                    <option value="drawing">🎨 藝術生圖</option>
-                </select>
+                
+                <div class="w-full md:w-auto">
+                    <select id="mode-select" onchange="updateUI()" class="w-full md:w-auto bg-emerald-900/40 text-white text-xs py-3 px-4 rounded-xl border border-emerald-500/50 font-bold outline-none cursor-pointer hover:bg-emerald-900/60 transition-colors">
+                        <option value="search" selected>🌍 深度研究 (顧問模式)</option>
+                        <option value="chat">💬 智能助理</option>
+                        <option value="presentation">📊 智能簡報 (Gamma-Like)</option>
+                        <option value="drawing">🎨 藝術生圖</option>
+                    </select>
+                </div>
             </div>
-            
-            <div id="search-options"><div style="font-size:11px; color:#94a3b8;"><i class="fas fa-info-circle"></i> 文字顧問諮詢模式。</div></div>
-            <div id="report-panel"><div class="grid-2"><div><label style="font-size:9px; color:#10b981; font-weight:bold; display:block; margin-bottom:4px;">研報風格</label><input type="text" id="report-style" placeholder="自定義，如：學術嚴謹、幽默風趣..."></div><div style="display:flex; align-items:center;"><span style="font-size:10px; color:#64748b;">將自動生成 Google Doc</span></div></div></div>
-            
-            <div id="ppt-panel">
-                <div class="grid-4" style="margin-bottom: 8px;">
-                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">生成模式</label>
-                        <select id="ppt-mode">
-                            <option value="hybrid">✨ 混合 (圖+文)</option>
-                            <option value="geometric">📐 純幾何 (Gamma)</option>
-                            <option value="ai_visual">🎨 純 AI 圖像</option>
+
+            <div id="search-badge" class="max-w-6xl mx-auto items-center gap-2 px-1 mt-2">
+                 <div class="w-full bg-emerald-900/30 border border-emerald-500/20 text-emerald-400 px-3 py-2 rounded-lg text-[11px] font-bold flex items-center justify-center md:justify-start gap-2 shadow-sm">
+                    <i class="fas fa-file-word text-lg"></i> 
+                    <span>已啟用：系統將自動生成 Google Doc 專業研報</span>
+                 </div>
+            </div>
+
+            <div id="ppt-panel" class="max-w-6xl mx-auto space-y-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">頁數</label>
+                        <input type="number" id="ppt-length" class="bg-slate-800 border border-white/10 text-white text-xs p-2 rounded-lg outline-none focus:border-emerald-500" value="6" min="3" max="20">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">內容深度</label>
+                        <select id="ppt-density" class="bg-slate-800 border border-white/10 text-white text-xs p-2 rounded-lg outline-none cursor-pointer">
+                            <option value="detailed">📚 詳細解說</option>
+                            <option value="brief">⚡ 精簡大綱</option>
                         </select>
                     </div>
-                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">內容深度</label>
-                        <select id="ppt-density">
-                            <option value="detailed">📚 仔細 (詳細內容)</option>
-                            <option value="brief">⚡ 綱要 (重點條列)</option>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">設計主題</label>
+                        <select id="ppt-theme" class="bg-slate-800 border border-white/10 text-white text-xs p-2 rounded-lg outline-none cursor-pointer">
+                            <option value="modern_blue">🔵 科技深藍</option>
+                            <option value="warm_orange">🟠 溫暖活力</option>
+                            <option value="forest_green">🟢 永續森林</option>
+                            <option value="dark_cyber">⚫ 暗黑模式</option>
                         </select>
                     </div>
-                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">色系搭配</label>
-                        <select id="ppt-theme">
-                            <option value="modern_blue">🔵 科技藍</option>
-                            <option value="warm_orange">🟠 溫暖橘</option>
-                            <option value="forest_green">🟢 森林綠</option>
-                            <option value="dark_cyber">⚫ 暗黑系</option>
-                        </select>
-                    </div>
-                    <div><label style="font-size:9px; color:#10b981; font-weight:bold;">預計頁數</label>
-                        <input type="number" id="ppt-length" value="6" min="3" max="20">
-                    </div>
-                </div>
-                <div class="grid-2">
-                    <div>
-                        <label style="font-size:9px; color:#10b981; font-weight:bold;">視覺風格 (AI 建議)</label>
-                        <select id="ppt-style-preset" onchange="checkCustomStyle()">
-                            <option value="auto">🤖 AI 自動推薦</option>
-                            <option value="minimalist">Minimalist (極簡白)</option>
-                            <option value="corporate">Corporate (商務專業)</option>
-                            <option value="creative">Creative (創意手繪)</option>
-                            <option value="custom">✏️ 自行定義...</option>
-                        </select>
-                    </div>
-                    <div id="custom-style-container" style="display:none;">
-                        <label style="font-size:9px; color:#10b981; font-weight:bold;">自定義風格描述</label>
-                        <input type="text" id="ppt-style-custom" placeholder="例如：Cyberpunk, 水彩風...">
+                    <div class="flex flex-col gap-1 justify-end">
+                         <div class="flex items-center gap-2 p-2 bg-slate-800 rounded-lg border border-white/10 h-[34px]">
+                            <input type="checkbox" id="ppt-ai-img" class="w-4 h-4 text-emerald-500 rounded" checked>
+                            <label for="ppt-ai-img" class="text-[10px] text-slate-300 cursor-pointer select-none">啟用 AI 配圖</label>
+                         </div>
                     </div>
                 </div>
             </div>
         </header>
-        <main id="chat-window"><div class="msg-row ai"><div class="msg-bubble">👋 <b>anyGem v55.0</b> 簡報引擎大升級！<br>現在支援三種生成模式：<br>1. <b>混合模式</b>：圖文並茂，最佳推薦。<br>2. <b>純幾何</b>：速度快，Gamma 風格。<br>3. <b>純 AI 圖</b>：視覺衝擊，全圖背景。<br><i>(請在上方選單設定)</i></div></div></main>
-        <div id="file-preview-bar" style="display:none;position:absolute;bottom:90px;left:20px;right:20px;background:#1e293b;padding:10px;border-radius:10px;border:1px solid #10b981;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:10px;"><div style="width:30px;height:30px;background:#0f172a;display:flex;justify-content:center;align-items:center;border-radius:5px;"><i class="fas fa-file text-emerald-500"></i></div><div style="display:flex;flex-direction:column;"><span id="file-name-label" style="font-size:12px;font-weight:bold;">File</span><span style="font-size:9px;color:#10b981;">Ready</span></div></div><button onclick="clearFile()" style="background:none;border:none;color:#94a3b8;cursor:pointer;">✕</button></div>
-        <footer>
-            <input type="file" id="file-input" style="display:none;">
-            <button onclick="document.getElementById('file-input').click()" style="background:#1e293b;border:1px solid #334155;color:#10b981;width:50px;height:50px;border-radius:10px;cursor:pointer;"><i class="fas fa-paperclip" style="font-size:18px;"></i></button>
-            <div style="flex:1;"><textarea id="user-input" rows="1" placeholder="輸入訊息..." style="width:100%;height:50px;padding:12px;resize:none;"></textarea></div>
-            <button onclick="handleSend()" id="send-btn" class="btn-primary" style="height:50px;padding:0 25px;">SEND <i class="fas fa-paper-plane"></i></button>
+
+        <main id="chat-window" class="flex-grow p-4 overflow-y-auto space-y-6 scroll-smooth pb-32"></main>
+
+        <div id="file-preview-bar" class="hidden absolute bottom-24 left-4 right-4 md:left-10 md:right-10 px-4 py-2 glass rounded-2xl border border-emerald-500/30 animate-fade-in flex items-center justify-between z-20">
+            <div class="flex items-center space-x-3">
+                <div id="file-thumb" class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-white/10 overflow-hidden text-emerald-500"></div>
+                <div class="flex flex-col">
+                    <span id="file-name-label" class="text-xs font-bold text-white truncate max-w-[150px]">附件已就緒</span>
+                    <span class="text-[9px] text-emerald-400 font-mono tracking-widest uppercase animate-pulse">Ready to Process</span>
+                </div>
+            </div>
+            <button onclick="clearFile()" class="p-1 bg-white/5 rounded-full text-slate-400 hover:text-red-400">✕</button>
+        </div>
+
+        <footer class="p-4 glass border-t border-emerald-900/30 z-30 absolute bottom-0 w-full">
+            <div class="max-w-6xl mx-auto flex gap-2 items-end">
+                <input type="file" id="file-input" class="hidden">
+                <button onclick="document.getElementById('file-input').click()" class="bg-slate-800 p-4 rounded-2xl hover:bg-emerald-600/20 active:scale-90 transition-all group">
+                    <i class="fas fa-paperclip text-emerald-400 group-hover:text-emerald-300 text-lg"></i>
+                </button>
+                <div class="flex-grow">
+                    <textarea id="user-input" rows="1" class="w-full bg-[#1e293b] rounded-2xl px-5 py-4 text-white text-sm outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none" placeholder="輸入訊息..."></textarea>
+                </div>
+                <button onclick="handleSend()" id="send-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-4 rounded-2xl font-black uppercase shadow-lg active:scale-95 transition-all">Send</button>
+            </div>
         </footer>
     </div>
+
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; // ⚠️ 請務必更換！
-        let sessId = localStorage.getItem('ANYGEM_USER_ID') || "UID_" + Date.now(); localStorage.setItem('ANYGEM_USER_ID', sessId);
-        const chatWindow = document.getElementById('chat-window'), input = document.getElementById('user-input'), btn = document.getElementById('send-btn'), modeSelect = document.getElementById('mode-select'), searchOptions = document.getElementById('search-options'), reportPanel = document.getElementById('report-panel'), pptPanel = document.getElementById('ppt-panel'), previewBar = document.getElementById('file-preview-bar');
+        // ⚠️ 請填入您的佈署網址 (如果是新部署的，請務必更新)
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; 
+        
+        let sessId = localStorage.getItem('ANYGEM_USER_ID') || "UID_" + Math.random().toString(36).substr(2, 9).toUpperCase();
+        localStorage.setItem('ANYGEM_USER_ID', sessId);
+
+        const chatWindow = document.getElementById('chat-window'), input = document.getElementById('user-input'), btn = document.getElementById('send-btn'), modeSelect = document.getElementById('mode-select'), pptPanel = document.getElementById('ppt-panel'), searchBadge = document.getElementById('search-badge'), previewBar = document.getElementById('file-preview-bar');
         let activeFile = null;
+
         function updateUI() {
             const m = modeSelect.value;
-            searchOptions.className = m === 'search' ? 'active' : ''; reportPanel.className = m === 'report' ? 'active' : ''; pptPanel.className = m === 'presentation' ? 'active' : '';
-            if(m==='search') input.placeholder = "輸入主題..."; else if(m==='report') input.placeholder = "輸入主題生成文件..."; else if(m==='presentation') input.placeholder = "貼上文章，生成簡報..."; else input.placeholder = "輸入訊息...";
+            // 介面切換邏輯
+            if (m === 'search') {
+                searchBadge.classList.add('active');
+                pptPanel.classList.remove('active');
+                input.placeholder = "輸入主題 (ex: 2025 AI 趨勢)，顧問將自動生成研報...";
+            } else if (m === 'presentation') {
+                searchBadge.classList.remove('active');
+                pptPanel.classList.add('active');
+                input.placeholder = "輸入主題以生成幾何簡報...";
+            } else {
+                searchBadge.classList.remove('active');
+                pptPanel.classList.remove('active');
+                input.placeholder = (m === 'drawing') ? "輸入描述或上傳圖片..." : "輸入訊息...";
+            }
             input.focus();
         }
-        function checkCustomStyle() {
-            const val = document.getElementById('ppt-style-preset').value;
-            document.getElementById('custom-style-container').style.display = val === 'custom' ? 'block' : 'none';
-        }
+
         async function handleSend() {
             const text = input.value.trim(); if(!text && !activeFile) return;
             addMessage('user', text, { fileName: activeFile?.name });
-            const payload = { message: text, session_id: sessId, mode: modeSelect.value, options: {} };
-            
-            if (payload.mode === 'report') {
-                payload.options = { style: document.getElementById('report-style').value };
-            } else if (payload.mode === 'presentation') {
-                const preset = document.getElementById('ppt-style-preset').value;
-                const custom = document.getElementById('ppt-style-custom').value;
-                payload.options = { 
-                    length: document.getElementById('ppt-length').value, 
-                    density: document.getElementById('ppt-density').value, 
-                    theme: document.getElementById('ppt-theme').value, 
-                    ppt_mode: document.getElementById('ppt-mode').value, // 新增：混合/幾何/AI
-                    visual_style: preset === 'custom' ? custom : preset // 新增：視覺風格
-                };
-            }
+
+            // 參數組裝
+            const payload = {
+                message: text, session_id: sessId, mode: modeSelect.value,
+                options: { 
+                    // 🔥 強制設定為 true，確保深度研究模式一定生成文件
+                    create_report: true,
+                    length: document.getElementById('ppt-length').value,
+                    density: document.getElementById('ppt-density').value,
+                    theme: document.getElementById('ppt-theme').value,
+                    use_ai_image: document.getElementById('ppt-ai-img').checked
+                }
+            };
+
             const tempFile = activeFile; input.value = ''; clearFile();
-            if(tempFile) { setLoading(true, "Uploading..."); const base64 = await toBase64(tempFile); payload.file_data = base64.split(',')[1]; payload.mime_type = tempFile.type; }
-            let loadTxt = "Processing..."; if(payload.mode==='presentation') loadTxt="Generating Slides...";
+            if(tempFile) {
+                setLoading(true, "Uploading...");
+                const base64 = await toBase64(tempFile);
+                payload.file_data = base64.split(',')[1];
+                payload.mime_type = tempFile.type;
+            }
+
+            let loadTxt = "AI Working...";
+            if (payload.mode === 'search') loadTxt = "Consulting & Writing Doc..."; // 更新 Loading 文字讓你知道他在寫文件
+            if (payload.mode === 'presentation') loadTxt = "Rendering Slides...";
+            if (payload.mode === 'drawing') loadTxt = "Painting...";
+            
             setLoading(true, loadTxt);
-            try { const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); const data = await res.json(); if(data.status === "success") { addMessage('ai', data.reply, { model: data.model, image: data.image, mime: data.mime }); fetchHistoryList(); } else { addMessage('ai', "🚨 Error: " + (data.error || "Unknown")); } } catch (e) { addMessage('ai', "❌ 連線失敗"); } finally { setLoading(false); }
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const data = await res.json();
+                if(data.status === "success") {
+                    addMessage('ai', data.reply, { model: data.model, image: data.image, mime: data.mime });
+                    fetchHistoryList();
+                } else { addMessage('ai', "🚨 Error: " + data.error); }
+            } catch (e) { addMessage('ai', "❌ 連線超時，請檢查網路後重試"); }
+            finally { setLoading(false); }
         }
+
         function addMessage(role, text, meta = null) {
-            const row = document.createElement('div'); row.className = `msg-row ${role}`;
-            const bubble = document.createElement('div'); bubble.className = 'msg-bubble';
-            if(meta?.fileName) bubble.innerHTML += `<div style="font-size:11px;margin-bottom:5px;opacity:0.8;"><i class="fas fa-file"></i> ${meta.fileName}</div>`;
-            if(meta?.image) bubble.innerHTML += `<img src="data:${meta.mime||'image/png'};base64,${meta.image}">`;
-            if(window.marked) bubble.innerHTML += marked.parse(text||""); else bubble.innerText += text;
-            if(role==='ai'){const c=document.createElement('button');c.className='copy-btn';c.innerHTML='<i class="fas fa-copy"></i>';c.onclick=()=>{navigator.clipboard.writeText(text);};bubble.appendChild(c);}
-            row.appendChild(bubble); chatWindow.appendChild(row); chatWindow.scrollTop = chatWindow.scrollHeight;
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in mb-6`;
+            const msgBox = document.createElement('div');
+            msgBox.className = `max-w-[85%] p-4 rounded-2xl shadow-xl relative ${role === 'user' ? 'bg-emerald-700 text-white rounded-tr-none' : 'bg-[#1e293b] text-slate-200 border border-emerald-500/10 rounded-tl-none'}`;
+            
+            if(meta?.fileName) msgBox.innerHTML += `<div class="mb-2 p-2 bg-black/20 rounded-lg text-xs flex gap-2"><i class="fas fa-file"></i> ${meta.fileName}</div>`;
+            if(meta?.image) msgBox.innerHTML += `<img src="data:${meta.mime || 'image/png'};base64,${meta.image}" class="w-full rounded-xl mb-3 shadow-lg">`;
+            
+            const tNode = document.createElement('div');
+            tNode.className = "prose prose-invert prose-sm max-w-none";
+            tNode.innerHTML = marked.parse(text || "");
+            msgBox.appendChild(tNode);
+            
+            if (role === 'ai') {
+                const b = document.createElement('button');
+                b.className = "mt-4 text-[9px] font-bold bg-white/5 hover:bg-emerald-600 px-3 py-1.5 rounded-lg transition-all";
+                b.innerHTML = "📋 複製內容";
+                b.onclick = () => { navigator.clipboard.writeText(text); b.innerHTML = "✅ 已複製"; setTimeout(() => b.innerHTML = "📋 複製內容", 2000); };
+                msgBox.appendChild(b);
+            }
+            wrapper.appendChild(msgBox); chatWindow.appendChild(wrapper); chatWindow.scrollTop = chatWindow.scrollHeight;
         }
-        document.getElementById('file-input').onchange = (e) => { activeFile = e.target.files[0]; if(!activeFile) return; previewBar.style.display = 'flex'; document.getElementById('file-name-label').innerText = activeFile.name; };
-        function toggleSidebar() { const sb=document.getElementById('sidebar'),ov=document.getElementById('overlay'); if(sb.style.transform==='translateX(0px)'){sb.style.transform='';ov.style.display='none';}else{sb.style.transform='translateX(0px)';ov.style.display='block';} }
+
+        document.getElementById('file-input').onchange = (e) => {
+            activeFile = e.target.files[0]; if(!activeFile) return;
+            previewBar.classList.remove('hidden');
+            document.getElementById('file-name-label').innerText = activeFile.name;
+            const thumb = document.getElementById('file-thumb');
+            if(activeFile.type.startsWith('image/')) thumb.innerHTML = `<img src="${URL.createObjectURL(activeFile)}" class="w-full h-full object-cover">`;
+            else thumb.innerHTML = `<i class="fas fa-file-alt text-lg"></i>`;
+        };
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('sidebar-overlay').classList.toggle('hidden'); }
         function newChat() { sessId = "UID_" + Date.now(); localStorage.setItem('ANYGEM_USER_ID', sessId); chatWindow.innerHTML = ''; fetchHistoryList(); }
-        async function fetchHistoryList() { const c = new AbortController(); setTimeout(()=>c.abort(),8000); try{ const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'get_session_list' }), signal:c.signal }); const data = await res.json(); const list = document.getElementById('history-list'); list.innerHTML = ''; if(data.sessions&&data.sessions.length>0){data.sessions.forEach(s=>{const d=document.createElement('div');d.className=`history-item ${s.id===sessId?'active':''}`;d.innerHTML=`<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:180px;">${s.title}</span><i class="fas fa-trash" onclick="deleteChat('${s.id}')"></i>`;d.onclick=(e)=>{if(e.target.tagName!=='I')loadSession(s.id);};list.appendChild(d);});}else{list.innerHTML='<div style="text-align:center;font-size:12px;color:#64748b;margin-top:10px;">尚無紀錄</div>';}}catch(e){} }
-        async function loadSession(id) { sessId=id;chatWindow.innerHTML='<div class="loader">Loading...</div>';const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({mode:'system',action:'load_session',session_id:id})});const data=await res.json();chatWindow.innerHTML='';data.logs.forEach(l=>addMessage(l.role,l.text)); }
-        async function deleteChat(id) { if(confirm("刪除此對話？")){await fetch(GAS_URL,{method:'POST',body:JSON.stringify({mode:'system',action:'delete_session',session_id:id})});fetchHistoryList();} }
-        function clearFile() { activeFile=null;previewBar.style.display='none';document.getElementById('file-input').value=''; }
-        function toBase64(f) { return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);}); }
-        function setLoading(l,t) { btn.disabled=l;if(l){const d=document.createElement('div');d.id='loader';d.className='loader';d.innerHTML=`<i class="fas fa-bolt"></i> ${t.toUpperCase()}`;chatWindow.appendChild(d);chatWindow.scrollTop=chatWindow.scrollHeight;}else{document.getElementById('loader')?.remove();} }
+        
+        async function fetchHistoryList() {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+            try {
+                const res = await fetch(GAS_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ mode: 'system', action: 'get_session_list' }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                const data = await res.json();
+                const list = document.getElementById('history-list'); list.innerHTML = '';
+                if(data.sessions.length === 0) { list.innerHTML = '<div class="text-center text-xs text-slate-600 mt-4">尚無紀錄</div>'; return; }
+                data.sessions.forEach(s => {
+                    const d = document.createElement('div');
+                    d.className = `p-3 rounded-xl text-xs flex justify-between items-center cursor-pointer hover:bg-white/5 ${s.id === sessId ? 'bg-emerald-900/40 text-white' : 'text-slate-400'}`;
+                    d.innerHTML = `<span onclick="loadSession('${s.id}')" class="truncate flex-1">${s.title}</span><i onclick="deleteChat('${s.id}')" class="fas fa-trash ml-2 opacity-50 hover:text-red-400"></i>`;
+                    list.appendChild(d);
+                });
+            } catch(e){ console.log("History load error"); }
+        }
+        
+        async function loadSession(id) { sessId = id; chatWindow.innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-spin text-emerald-500"></i></div>'; const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'load_session', session_id: id }) }); const data = await res.json(); chatWindow.innerHTML=''; data.logs.forEach(l => addMessage(l.role, l.text)); }
+        async function deleteChat(id) { if(confirm("確定刪除？")) { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'delete_session', session_id: id }) }); fetchHistoryList(); } }
+        function clearFile() { activeFile = null; previewBar.classList.add('hidden'); }
+        function toBase64(f) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); }); }
+        function setLoading(l, t) {
+            btn.disabled = l;
+            if(l) {
+                const d = document.createElement('div'); d.id = 'loader';
+                d.className = 'text-center p-4 animate-pulse text-emerald-500 text-[10px] font-black';
+                d.innerHTML = `<i class="fas fa-bolt"></i> ${t.toUpperCase()}`;
+                chatWindow.appendChild(d); chatWindow.scrollTop = chatWindow.scrollHeight;
+            } else { document.getElementById('loader')?.remove(); }
+        }
         updateUI(); fetchHistoryList();
     </script>
 </body>
 </html>
-
