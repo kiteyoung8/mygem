@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>anyGem v55.1 : UI Fixed</title>
+    <title>anyGem v56.0 : PDF Publisher</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -17,21 +17,12 @@
         .sidebar-transition { transition: transform 0.3s ease-in-out; }
         .glass { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         
-        /* 🔥 關鍵修復：強制下拉選單選項使用深色背景，解決白字白底問題 */
-        select option {
-            background-color: #1e293b; /* 深灰藍色 */
-            color: #ffffff;
-            padding: 10px;
-        }
+        select option { background-color: #1e293b; color: #ffffff; padding: 10px; }
 
-        /* 面板動畫設定 */
-        #ppt-panel { display: none; margin-top: 1rem; padding: 1.25rem; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 1.5rem; background: rgba(16, 185, 129, 0.05); }
-        #ppt-panel.active { display: block; animation: fadeInUp 0.3s ease-out; }
+        /* 面板顯示控制 */
+        #ppt-panel, #search-options-panel { display: none; }
+        #ppt-panel.active, #search-options-panel.active { display: block; animation: fadeInUp 0.3s ease-out; }
         
-        /* 深度研究的提示區塊 */
-        #search-badge { display: none; }
-        #search-badge.active { display: flex; animation: fadeInUp 0.3s ease-out; }
-
         .history-item .delete-btn { opacity: 0; transition: opacity 0.2s; }
         .history-item:hover .delete-btn { opacity: 1; }
     </style>
@@ -46,7 +37,7 @@
         </div>
         <div class="flex-grow overflow-y-auto p-3 space-y-2" id="history-list"></div>
         <div class="p-4 border-t border-white/5 text-[10px] text-center text-slate-500 font-mono uppercase tracking-widest">
-            anyGem v55.1 PRO
+            anyGem v56.0 PRO
         </div>
     </aside>
 
@@ -58,9 +49,8 @@
             <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 mb-2">
                 <div class="flex items-center gap-3 w-full md:w-auto">
                     <button onclick="toggleSidebar()" class="md:hidden text-white p-2 hover:bg-white/10 rounded-lg"><i class="fas fa-bars text-xl"></i></button>
-                    <span class="text-xl font-black text-white italic tracking-tighter uppercase">anyGem <span class="text-emerald-500 text-sm">v55.1</span></span>
+                    <span class="text-xl font-black text-white italic tracking-tighter uppercase">anyGem <span class="text-emerald-500 text-sm">v56</span></span>
                 </div>
-                
                 <div class="w-full md:w-auto">
                     <select id="mode-select" onchange="updateUI()" class="w-full md:w-auto bg-emerald-900/40 text-white text-xs py-3 px-4 rounded-xl border border-emerald-500/50 font-bold outline-none cursor-pointer hover:bg-emerald-900/60 transition-colors">
                         <option value="search" selected>🌍 深度研究 (顧問模式)</option>
@@ -71,29 +61,39 @@
                 </div>
             </div>
 
-            <div id="search-badge" class="max-w-6xl mx-auto items-center gap-2 px-1 mt-2">
-                 <div class="w-full bg-emerald-900/30 border border-emerald-500/20 text-emerald-400 px-3 py-2 rounded-lg text-[11px] font-bold flex items-center justify-center md:justify-start gap-2 shadow-sm">
-                    <i class="fas fa-file-word text-lg"></i> 
-                    <span>已啟用：系統將自動生成 Google Doc 專業研報</span>
+            <div id="search-options-panel" class="max-w-6xl mx-auto mt-2">
+                 <div class="bg-slate-800/50 border border-white/10 rounded-xl p-3 flex flex-wrap items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="create-pdf-check" class="w-5 h-5 text-emerald-500 bg-slate-700 border-gray-600 rounded focus:ring-emerald-500">
+                        <label for="create-pdf-check" class="text-xs font-bold text-white cursor-pointer select-none">
+                            <i class="fas fa-file-pdf text-red-400 mr-1"></i> 生成 PDF 研報
+                        </label>
+                    </div>
+                    <div class="h-4 w-[1px] bg-white/10"></div>
+                    <div class="flex-grow flex items-center gap-2">
+                        <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">STYLE:</span>
+                        <input type="text" id="pdf-style" placeholder="輸入風格 (例: 學術嚴謹、商業簡報、幽默風趣...)" 
+                               class="flex-grow bg-slate-900/50 text-white text-xs py-1.5 px-3 rounded-lg border border-white/10 outline-none focus:border-emerald-500 placeholder-slate-500 transition-all">
+                    </div>
                  </div>
             </div>
 
-            <div id="ppt-panel" class="max-w-6xl mx-auto space-y-4">
+            <div id="ppt-panel" class="max-w-6xl mx-auto space-y-4 mt-2 bg-slate-800/50 border border-white/10 rounded-xl p-3">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div class="flex flex-col gap-1">
                         <label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">頁數</label>
-                        <input type="number" id="ppt-length" class="bg-slate-800 border border-white/10 text-white text-xs p-2 rounded-lg outline-none focus:border-emerald-500" value="6" min="3" max="20">
+                        <input type="number" id="ppt-length" class="bg-slate-900 border border-white/10 text-white text-xs p-2 rounded-lg outline-none" value="6" min="3" max="20">
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">內容深度</label>
-                        <select id="ppt-density" class="bg-slate-800 border border-white/10 text-white text-xs p-2 rounded-lg outline-none cursor-pointer">
+                        <select id="ppt-density" class="bg-slate-900 border border-white/10 text-white text-xs p-2 rounded-lg outline-none">
                             <option value="detailed">📚 詳細解說</option>
                             <option value="brief">⚡ 精簡大綱</option>
                         </select>
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">設計主題</label>
-                        <select id="ppt-theme" class="bg-slate-800 border border-white/10 text-white text-xs p-2 rounded-lg outline-none cursor-pointer">
+                        <select id="ppt-theme" class="bg-slate-900 border border-white/10 text-white text-xs p-2 rounded-lg outline-none">
                             <option value="modern_blue">🔵 科技深藍</option>
                             <option value="warm_orange">🟠 溫暖活力</option>
                             <option value="forest_green">🟢 永續森林</option>
@@ -101,7 +101,7 @@
                         </select>
                     </div>
                     <div class="flex flex-col gap-1 justify-end">
-                         <div class="flex items-center gap-2 p-2 bg-slate-800 rounded-lg border border-white/10 h-[34px]">
+                         <div class="flex items-center gap-2 p-2 bg-slate-900 rounded-lg border border-white/10 h-[34px]">
                             <input type="checkbox" id="ppt-ai-img" class="w-4 h-4 text-emerald-500 rounded" checked>
                             <label for="ppt-ai-img" class="text-[10px] text-slate-300 cursor-pointer select-none">啟用 AI 配圖</label>
                          </div>
@@ -138,28 +138,27 @@
     </div>
 
     <script>
-        // ⚠️ 請填入您的佈署網址 (如果是新部署的，請務必更新)
+        // ⚠️ 請填入您的佈署網址 (新部署請更新)
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; 
         
         let sessId = localStorage.getItem('ANYGEM_USER_ID') || "UID_" + Math.random().toString(36).substr(2, 9).toUpperCase();
         localStorage.setItem('ANYGEM_USER_ID', sessId);
 
-        const chatWindow = document.getElementById('chat-window'), input = document.getElementById('user-input'), btn = document.getElementById('send-btn'), modeSelect = document.getElementById('mode-select'), pptPanel = document.getElementById('ppt-panel'), searchBadge = document.getElementById('search-badge'), previewBar = document.getElementById('file-preview-bar');
+        const chatWindow = document.getElementById('chat-window'), input = document.getElementById('user-input'), btn = document.getElementById('send-btn'), modeSelect = document.getElementById('mode-select'), pptPanel = document.getElementById('ppt-panel'), searchPanel = document.getElementById('search-options-panel'), previewBar = document.getElementById('file-preview-bar');
         let activeFile = null;
 
         function updateUI() {
             const m = modeSelect.value;
-            // 介面切換邏輯
             if (m === 'search') {
-                searchBadge.classList.add('active');
+                searchPanel.classList.add('active');
                 pptPanel.classList.remove('active');
-                input.placeholder = "輸入主題 (ex: 2025 AI 趨勢)，顧問將自動生成研報...";
+                input.placeholder = "輸入主題，顧問將進行深度研究...";
             } else if (m === 'presentation') {
-                searchBadge.classList.remove('active');
+                searchPanel.classList.remove('active');
                 pptPanel.classList.add('active');
                 input.placeholder = "輸入主題以生成幾何簡報...";
             } else {
-                searchBadge.classList.remove('active');
+                searchPanel.classList.remove('active');
                 pptPanel.classList.remove('active');
                 input.placeholder = (m === 'drawing') ? "輸入描述或上傳圖片..." : "輸入訊息...";
             }
@@ -170,12 +169,13 @@
             const text = input.value.trim(); if(!text && !activeFile) return;
             addMessage('user', text, { fileName: activeFile?.name });
 
-            // 參數組裝
+            // 🔥 參數更新：加入 PDF 選項與風格
             const payload = {
                 message: text, session_id: sessId, mode: modeSelect.value,
                 options: { 
-                    // 🔥 強制設定為 true，確保深度研究模式一定生成文件
-                    create_report: true,
+                    create_pdf: document.getElementById('create-pdf-check').checked,
+                    pdf_style: document.getElementById('pdf-style').value,
+                    // PPT 參數
                     length: document.getElementById('ppt-length').value,
                     density: document.getElementById('ppt-density').value,
                     theme: document.getElementById('ppt-theme').value,
@@ -192,7 +192,10 @@
             }
 
             let loadTxt = "AI Working...";
-            if (payload.mode === 'search') loadTxt = "Consulting & Writing Doc..."; // 更新 Loading 文字讓你知道他在寫文件
+            // 根據是否生成 PDF 改變 Loading 文字
+            if (payload.mode === 'search') {
+                loadTxt = payload.options.create_pdf ? "Researching & Generating PDF..." : "Consulting...";
+            }
             if (payload.mode === 'presentation') loadTxt = "Rendering Slides...";
             if (payload.mode === 'drawing') loadTxt = "Painting...";
             
@@ -244,42 +247,12 @@
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('sidebar-overlay').classList.toggle('hidden'); }
         function newChat() { sessId = "UID_" + Date.now(); localStorage.setItem('ANYGEM_USER_ID', sessId); chatWindow.innerHTML = ''; fetchHistoryList(); }
-        
-        async function fetchHistoryList() {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000);
-            try {
-                const res = await fetch(GAS_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ mode: 'system', action: 'get_session_list' }),
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                const data = await res.json();
-                const list = document.getElementById('history-list'); list.innerHTML = '';
-                if(data.sessions.length === 0) { list.innerHTML = '<div class="text-center text-xs text-slate-600 mt-4">尚無紀錄</div>'; return; }
-                data.sessions.forEach(s => {
-                    const d = document.createElement('div');
-                    d.className = `p-3 rounded-xl text-xs flex justify-between items-center cursor-pointer hover:bg-white/5 ${s.id === sessId ? 'bg-emerald-900/40 text-white' : 'text-slate-400'}`;
-                    d.innerHTML = `<span onclick="loadSession('${s.id}')" class="truncate flex-1">${s.title}</span><i onclick="deleteChat('${s.id}')" class="fas fa-trash ml-2 opacity-50 hover:text-red-400"></i>`;
-                    list.appendChild(d);
-                });
-            } catch(e){ console.log("History load error"); }
-        }
-        
+        async function fetchHistoryList() { const c = new AbortController(); const t = setTimeout(() => c.abort(), 8000); try { const r = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'get_session_list' }), signal: c.signal }); clearTimeout(t); const d = await r.json(); const l = document.getElementById('history-list'); l.innerHTML = ''; if(d.sessions.length === 0) { l.innerHTML = '<div class="text-center text-xs text-slate-600 mt-4">尚無紀錄</div>'; return; } d.sessions.forEach(s => { const el = document.createElement('div'); el.className = `p-3 rounded-xl text-xs flex justify-between items-center cursor-pointer hover:bg-white/5 ${s.id === sessId ? 'bg-emerald-900/40 text-white' : 'text-slate-400'}`; el.innerHTML = `<span onclick="loadSession('${s.id}')" class="truncate flex-1">${s.title}</span><i onclick="deleteChat('${s.id}')" class="fas fa-trash ml-2 opacity-50 hover:text-red-400"></i>`; l.appendChild(el); }); } catch(e){} }
         async function loadSession(id) { sessId = id; chatWindow.innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-spin text-emerald-500"></i></div>'; const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'load_session', session_id: id }) }); const data = await res.json(); chatWindow.innerHTML=''; data.logs.forEach(l => addMessage(l.role, l.text)); }
         async function deleteChat(id) { if(confirm("確定刪除？")) { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'delete_session', session_id: id }) }); fetchHistoryList(); } }
         function clearFile() { activeFile = null; previewBar.classList.add('hidden'); }
         function toBase64(f) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); }); }
-        function setLoading(l, t) {
-            btn.disabled = l;
-            if(l) {
-                const d = document.createElement('div'); d.id = 'loader';
-                d.className = 'text-center p-4 animate-pulse text-emerald-500 text-[10px] font-black';
-                d.innerHTML = `<i class="fas fa-bolt"></i> ${t.toUpperCase()}`;
-                chatWindow.appendChild(d); chatWindow.scrollTop = chatWindow.scrollHeight;
-            } else { document.getElementById('loader')?.remove(); }
-        }
+        function setLoading(l, t) { btn.disabled = l; if(l) { const d = document.createElement('div'); d.id = 'loader'; d.className = 'text-center p-4 animate-pulse text-emerald-500 text-[10px] font-black'; d.innerHTML = `<i class="fas fa-bolt"></i> ${t.toUpperCase()}`; chatWindow.appendChild(d); chatWindow.scrollTop = chatWindow.scrollHeight; } else { document.getElementById('loader')?.remove(); } }
         updateUI(); fetchHistoryList();
     </script>
 </body>
