@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>anyGem v56.0 : PDF Publisher</title>
+    <title>anyGem v57.0 : Deep Insight</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -37,7 +37,7 @@
         </div>
         <div class="flex-grow overflow-y-auto p-3 space-y-2" id="history-list"></div>
         <div class="p-4 border-t border-white/5 text-[10px] text-center text-slate-500 font-mono uppercase tracking-widest">
-            anyGem v56.0 PRO
+            anyGem v57.0 PRO
         </div>
     </aside>
 
@@ -49,7 +49,7 @@
             <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 mb-2">
                 <div class="flex items-center gap-3 w-full md:w-auto">
                     <button onclick="toggleSidebar()" class="md:hidden text-white p-2 hover:bg-white/10 rounded-lg"><i class="fas fa-bars text-xl"></i></button>
-                    <span class="text-xl font-black text-white italic tracking-tighter uppercase">anyGem <span class="text-emerald-500 text-sm">v56</span></span>
+                    <span class="text-xl font-black text-white italic tracking-tighter uppercase">anyGem <span class="text-emerald-500 text-sm">v57</span></span>
                 </div>
                 <div class="w-full md:w-auto">
                     <select id="mode-select" onchange="updateUI()" class="w-full md:w-auto bg-emerald-900/40 text-white text-xs py-3 px-4 rounded-xl border border-emerald-500/50 font-bold outline-none cursor-pointer hover:bg-emerald-900/60 transition-colors">
@@ -63,17 +63,16 @@
 
             <div id="search-options-panel" class="max-w-6xl mx-auto mt-2">
                  <div class="bg-slate-800/50 border border-white/10 rounded-xl p-3 flex flex-wrap items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        <input type="checkbox" id="create-pdf-check" class="w-5 h-5 text-emerald-500 bg-slate-700 border-gray-600 rounded focus:ring-emerald-500">
-                        <label for="create-pdf-check" class="text-xs font-bold text-white cursor-pointer select-none">
-                            <i class="fas fa-file-pdf text-red-400 mr-1"></i> 生成研報
-                        </label>
-                    </div>
-                    <div class="h-4 w-[1px] bg-white/10"></div>
                     <div class="flex-grow flex items-center gap-2">
-                        <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">STYLE:</span>
-                        <input type="text" id="pdf-style" placeholder="輸入風格 (例: 學術嚴謹、商業簡報、幽默風趣...)" 
-                               class="flex-grow bg-slate-900/50 text-white text-xs py-1.5 px-3 rounded-lg border border-white/10 outline-none focus:border-emerald-500 placeholder-slate-500 transition-all">
+                        <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">REPORT DEPTH:</span>
+                        <select id="research-depth" class="flex-grow bg-slate-900/50 text-white text-xs py-2 px-3 rounded-lg border border-white/10 outline-none focus:border-emerald-500 cursor-pointer">
+                            <option value="comprehensive">🚀 深度綜合報告 (McKinsey Style)</option>
+                            <option value="executive">💡 高階決策摘要 (Executive Summary)</option>
+                            <option value="outline">🧠 邏輯架構大綱 (Logical Framework)</option>
+                        </select>
+                    </div>
+                    <div class="text-[10px] text-slate-400 flex items-center">
+                        <i class="fas fa-check-circle text-emerald-500 mr-1"></i> 自動生成 Google Doc
                     </div>
                  </div>
             </div>
@@ -138,7 +137,7 @@
     </div>
 
     <script>
-        // ⚠️ 請填入您的佈署網址 (新部署請更新)
+        // ⚠️ 請填入您的佈署網址
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; 
         
         let sessId = localStorage.getItem('ANYGEM_USER_ID') || "UID_" + Math.random().toString(36).substr(2, 9).toUpperCase();
@@ -152,7 +151,7 @@
             if (m === 'search') {
                 searchPanel.classList.add('active');
                 pptPanel.classList.remove('active');
-                input.placeholder = "輸入主題，顧問將進行深度研究...";
+                input.placeholder = "輸入研究主題，顧問將進行深度分析...";
             } else if (m === 'presentation') {
                 searchPanel.classList.remove('active');
                 pptPanel.classList.add('active');
@@ -169,12 +168,11 @@
             const text = input.value.trim(); if(!text && !activeFile) return;
             addMessage('user', text, { fileName: activeFile?.name });
 
-            // 🔥 參數更新：加入 PDF 選項與風格
+            // 🔥 參數更新：傳送研究深度 (research_depth)
             const payload = {
                 message: text, session_id: sessId, mode: modeSelect.value,
                 options: { 
-                    create_pdf: document.getElementById('create-pdf-check').checked,
-                    pdf_style: document.getElementById('pdf-style').value,
+                    research_depth: document.getElementById('research-depth').value,
                     // PPT 參數
                     length: document.getElementById('ppt-length').value,
                     density: document.getElementById('ppt-density').value,
@@ -192,10 +190,7 @@
             }
 
             let loadTxt = "AI Working...";
-            // 根據是否生成 PDF 改變 Loading 文字
-            if (payload.mode === 'search') {
-                loadTxt = payload.options.create_pdf ? "Researching & Generating PDF..." : "Consulting...";
-            }
+            if (payload.mode === 'search') loadTxt = "Deep Researching...";
             if (payload.mode === 'presentation') loadTxt = "Rendering Slides...";
             if (payload.mode === 'drawing') loadTxt = "Painting...";
             
