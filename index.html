@@ -2,232 +2,520 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>anyGem v58.0 : Super Assistant</title>
+    <!-- ✨ 核心修復：加入 maximum-scale=1.0 和 user-scalable=no，防止 iOS 鍵盤彈出時強制放大導致跑版 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>anyGem - Super Agent v72.1 (Mobile Optimized)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #020617; color: #cbd5e1; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeInUp 0.4s ease-out forwards; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
-        .sidebar-transition { transition: transform 0.3s ease-in-out; }
-        .glass { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        body { background-color: #131314; color: #e3e3e3; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #444; }
         
-        select option { background-color: #1e293b; color: #ffffff; padding: 10px; }
+        /* ✨ 核心修復：強化 Markdown 內文的換行處理，防止長網址把手機畫面撐破 */
+        .prose { max-width: 100%; word-break: break-word; overflow-wrap: break-word; }
+        .prose pre { background-color: #1e1e20; border-radius: 12px; padding: 1.25rem; overflow-x: auto; border: 1px solid #333; margin: 1rem 0; position: relative; max-width: 100%; }
+        .prose code { color: #f87171; background-color: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 6px; font-size: 0.9em; font-family: 'Fira Code', monospace; }
+        .prose a { color: #8ab4f8; text-decoration: underline; text-underline-offset: 4px; transition: color 0.2s; }
+        .prose h1, .prose h2, .prose h3 { color: #fff; margin-top: 1.5rem; margin-bottom: 0.75rem; font-weight: 600; }
+        .prose p { margin-bottom: 1rem; line-height: 1.7; }
+        .prose img { max-width: 100%; border-radius: 0.75rem; height: auto; }
 
-        /* 面板顯示控制 */
-        #ppt-panel { display: none; }
-        #ppt-panel.active { display: block; animation: fadeInUp 0.3s ease-out; }
-        
-        .history-item .delete-btn { opacity: 0; transition: opacity 0.2s; }
-        .history-item:hover .delete-btn { opacity: 1; }
+        .typing-indicator span { animation: blink 1.4s infinite both; height: 5px; width: 5px; background-color: #888; border-radius: 50%; display: inline-block; margin: 0 2px; }
+        @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
+
+        .active-session { background-color: #33353a; color: white; border-left: 4px solid #8ab4f8; }
+        .pinned-icon { transform: rotate(-45deg); color: #8ab4f8; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
 
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0f172a] border-r border-emerald-900/30 transform -translate-x-full md:translate-x-0 sidebar-transition flex flex-col shadow-2xl">
-        <div class="p-4 border-b border-white/5">
-            <button onclick="newChat()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95">
-                <i class="fas fa-plus"></i> 新增對話
-            </button>
+    <div id="preview-modal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md flex-col">
+        <div class="h-14 bg-[#1e1f22] border-b border-[#333] flex items-center justify-between px-4 sm:px-6">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <span class="material-symbols-rounded text-blue-400">deployed_code</span>
+                <span class="font-semibold text-xs sm:text-sm tracking-wide text-white truncate">Artifact Preview</span>
+            </div>
+            <div class="flex items-center gap-2 sm:gap-4 shrink-0">
+                <button onclick="refreshPreview()" class="p-2 text-gray-400 hover:text-white transition-colors"><span class="material-symbols-rounded">refresh</span></button>
+                <button onclick="closePreview()" class="p-2 text-gray-400 hover:text-red-400 bg-[#333] hover:bg-red-500/10 rounded-full transition-all"><span class="material-symbols-rounded">close</span></button>
+            </div>
         </div>
-        <div class="flex-grow overflow-y-auto p-3 space-y-2" id="history-list"></div>
-        <div class="p-4 border-t border-white/5 text-[10px] text-center text-slate-500 font-mono uppercase tracking-widest">
-            anyGem v58.0 PRO
+        <div class="flex-1 bg-white relative">
+            <iframe id="preview-iframe" sandbox="allow-scripts allow-forms allow-modals" class="w-full h-full border-none absolute inset-0"></iframe>
         </div>
-    </aside>
-
-    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden glass"></div>
-
-    <div class="flex-1 flex flex-col h-full relative md:ml-64 transition-all w-full">
-        
-        <header class="p-4 glass sticky top-0 z-40 shadow-xl">
-            <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 mb-2">
-                <div class="flex items-center gap-3 w-full md:w-auto">
-                    <button onclick="toggleSidebar()" class="md:hidden text-white p-2 hover:bg-white/10 rounded-lg"><i class="fas fa-bars text-xl"></i></button>
-                    <span class="text-xl font-black text-white italic tracking-tighter uppercase">anyGem <span class="text-emerald-500 text-sm">v58</span></span>
-                </div>
-                <div class="w-full md:w-auto">
-                    <select id="mode-select" onchange="updateUI()" class="w-full md:w-auto bg-emerald-900/40 text-white text-xs py-3 px-4 rounded-xl border border-emerald-500/50 font-bold outline-none cursor-pointer hover:bg-emerald-900/60 transition-colors">
-                        <option value="chat" selected>🧠 超級智能助理 (Deep Chat)</option>
-                        <option value="presentation">📊 智能簡報 (Gamma-Like)</option>
-                        <option value="drawing">🎨 藝術生圖</option>
-                    </select>
-                </div>
-            </div>
-
-            <div id="ppt-panel" class="max-w-6xl mx-auto space-y-4 mt-2 bg-slate-800/50 border border-white/10 rounded-xl p-3">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">頁數</label>
-                        <input type="number" id="ppt-length" class="bg-slate-900 border border-white/10 text-white text-xs p-2 rounded-lg outline-none" value="6" min="3" max="20">
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">內容深度</label>
-                        <select id="ppt-density" class="bg-slate-900 border border-white/10 text-white text-xs p-2 rounded-lg outline-none">
-                            <option value="detailed">📚 詳細解說</option>
-                            <option value="brief">⚡ 精簡大綱</option>
-                        </select>
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">設計主題</label>
-                        <select id="ppt-theme" class="bg-slate-900 border border-white/10 text-white text-xs p-2 rounded-lg outline-none">
-                            <option value="modern_blue">🔵 科技深藍</option>
-                            <option value="warm_orange">🟠 溫暖活力</option>
-                            <option value="forest_green">🟢 永續森林</option>
-                            <option value="dark_cyber">⚫ 暗黑模式</option>
-                        </select>
-                    </div>
-                    <div class="flex flex-col gap-1 justify-end">
-                         <div class="flex items-center gap-2 p-2 bg-slate-900 rounded-lg border border-white/10 h-[34px]">
-                            <input type="checkbox" id="ppt-ai-img" class="w-4 h-4 text-emerald-500 rounded" checked>
-                            <label for="ppt-ai-img" class="text-[10px] text-slate-300 cursor-pointer select-none">啟用 AI 配圖</label>
-                         </div>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <main id="chat-window" class="flex-grow p-4 overflow-y-auto space-y-6 scroll-smooth pb-32"></main>
-
-        <div id="file-preview-bar" class="hidden absolute bottom-24 left-4 right-4 md:left-10 md:right-10 px-4 py-2 glass rounded-2xl border border-emerald-500/30 animate-fade-in flex items-center justify-between z-20">
-            <div class="flex items-center space-x-3">
-                <div id="file-thumb" class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-white/10 overflow-hidden text-emerald-500"></div>
-                <div class="flex flex-col">
-                    <span id="file-name-label" class="text-xs font-bold text-white truncate max-w-[150px]">附件已就緒</span>
-                    <span class="text-[9px] text-emerald-400 font-mono tracking-widest uppercase animate-pulse">Ready to Process</span>
-                </div>
-            </div>
-            <button onclick="clearFile()" class="p-1 bg-white/5 rounded-full text-slate-400 hover:text-red-400">✕</button>
-        </div>
-
-        <footer class="p-4 glass border-t border-emerald-900/30 z-30 absolute bottom-0 w-full">
-            <div class="max-w-6xl mx-auto flex gap-2 items-end">
-                <input type="file" id="file-input" class="hidden">
-                <button onclick="document.getElementById('file-input').click()" class="bg-slate-800 p-4 rounded-2xl hover:bg-emerald-600/20 active:scale-90 transition-all group">
-                    <i class="fas fa-paperclip text-emerald-400 group-hover:text-emerald-300 text-lg"></i>
-                </button>
-                <div class="flex-grow">
-                    <textarea id="user-input" rows="1" class="w-full bg-[#1e293b] rounded-2xl px-5 py-4 text-white text-sm outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none" placeholder="輸入問題，我將為您深度分析..."></textarea>
-                </div>
-                <button onclick="handleSend()" id="send-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-4 rounded-2xl font-black uppercase shadow-lg active:scale-95 transition-all">Send</button>
-            </div>
-        </footer>
     </div>
 
+    <aside id="sidebar" class="w-72 bg-[#1e1f22] border-r border-[#333] flex flex-col transition-all duration-300 z-30 absolute md:relative h-full -translate-x-full md:translate-x-0">
+        <div class="p-6">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+                    <span class="material-symbols-rounded text-white text-xl">auto_awesome</span>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight text-white">anyGem Agent</h1>
+            </div>
+            <button onclick="startNewSession()" class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-3 rounded-xl transition-all shadow-lg">
+                <span class="material-symbols-rounded">add</span> 新對話
+            </button>
+        </div>
+        <div id="session-list" class="flex-1 overflow-y-auto px-3 space-y-1 pb-4"></div>
+        <div class="p-4 border-t border-[#333] text-xs text-gray-500 text-center font-mono">v72.1 Mobile Edition</div>
+    </aside>
+
+    <main class="flex-1 flex flex-col relative bg-[#131314] overflow-hidden w-full">
+        <header class="h-14 flex items-center justify-between px-4 md:hidden border-b border-[#333] bg-[#1e1f22] shrink-0 z-20">
+            <button onclick="toggleSidebar()" class="p-2 text-gray-400"><span class="material-symbols-rounded">menu</span></button>
+            <span class="font-semibold text-sm truncate px-4" id="mobile-title">新對話</span>
+            <div class="w-10"></div>
+        </header>
+
+        <!-- ✨ 核心修復：加大了 pb-48，確保手機版滑動到底部時，對話內容不會被高大的輸入框遮擋 -->
+        <div id="chat-container" class="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:px-12 space-y-6 pb-48 md:pb-40 w-full relative">
+            <div class="max-w-3xl mx-auto flex gap-4 sm:gap-6 w-full">
+                <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shrink-0"><span class="material-symbols-rounded text-white">smart_toy</span></div>
+                <div class="flex-1">
+                    <h2 class="text-xl sm:text-2xl font-bold text-white mb-2">我是您的 anyGem 代理人</h2>
+                    <p class="text-gray-400 text-sm sm:text-base leading-relaxed">我已準備好協助您處理開發、簡報與文件。您可以試著讓我寫一段 React 代碼或修改您的圖片。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ✨ 核心修復：重新調整底部的 z-index 與 Padding 適配手機版 -->
+        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#131314] via-[#131314] to-transparent pt-12 pb-4 sm:pb-8 px-2 sm:px-4 md:px-12 z-20 pointer-events-none">
+            <div class="max-w-3xl mx-auto w-full pointer-events-auto">
+                <div id="upload-preview-container" class="hidden flex gap-3 mb-3 px-2">
+                    <div class="relative group">
+                        <img id="image-preview" class="hidden h-16 w-16 sm:h-20 sm:w-20 object-cover rounded-xl border-2 border-blue-500/50 shadow-lg">
+                        <div id="doc-preview" class="hidden flex items-center gap-2 sm:gap-3 bg-[#2a2b2f] p-3 sm:p-4 rounded-xl border border-[#444] shadow-lg">
+                            <span class="material-symbols-rounded text-blue-400 text-xl sm:text-2xl">description</span>
+                            <span id="doc-filename" class="text-xs sm:text-sm font-medium truncate max-w-[120px] sm:max-w-[150px]"></span>
+                        </div>
+                        <button onclick="clearUpload()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md"><span class="material-symbols-rounded text-[14px] block">close</span></button>
+                    </div>
+                </div>
+
+                <!-- ✨ 核心修復：縮減手機版的內邊距，榨出更多打字空間 -->
+                <div class="bg-[#1e1f22] rounded-2xl border border-[#333] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] focus-within:border-blue-500 transition-all p-1.5 sm:p-2 mx-1 sm:mx-0">
+                    <div class="flex items-center gap-2 px-2 sm:px-3 mb-1 sm:mb-2 pt-1 border-b border-[#333] pb-1.5 sm:pb-2">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="web-search-toggle" class="sr-only peer">
+                            <div class="w-8 h-4 bg-gray-600 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-full"></div>
+                            <span class="ml-2 text-xs font-medium text-gray-400 peer-checked:text-blue-400 flex items-center gap-1">
+                                <span class="material-symbols-rounded text-[14px] sm:text-sm">language</span> 連網搜尋
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div class="flex items-end gap-1 sm:gap-2 mt-1">
+                        <!-- ✨ 核心修復：加入 shrink-0 確保按鈕不會被壓扁 -->
+                        <button onclick="document.getElementById('file-upload').click()" class="p-2 sm:p-3 shrink-0 text-gray-400 hover:text-white rounded-xl transition-colors"><span class="material-symbols-rounded block">attach_file</span></button>
+                        <input type="file" id="file-upload" class="hidden" onchange="handleFileUpload(event)" accept="image/*,application/pdf,text/*">
+                        
+                        <!-- ✨ 核心修復：確保字體為 text-base (16px)，這是防止 iOS 自動放大的終極保證 -->
+                        <textarea id="user-input" rows="1" placeholder="輸入指令或貼上截圖..." class="w-full bg-transparent border-none outline-none text-gray-100 py-2.5 sm:py-3 px-1 sm:px-2 resize-none max-h-32 sm:max-h-60 text-base leading-relaxed"></textarea>
+                        
+                        <!-- ✨ 核心修復：加入 shrink-0 -->
+                        <button id="send-btn" class="p-2.5 sm:p-3 shrink-0 bg-white text-black rounded-xl hover:bg-gray-200 transition-all shadow-md flex items-center justify-center">
+                            <span class="material-symbols-rounded block">send</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 點擊遮罩，用於手機版收合側邊欄 -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden" onclick="toggleSidebar()"></div>
+
     <script>
-        // ⚠️ 請務必確認這裡的網址是您剛剛「建立新版本」後取得的最新網址
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec"; 
-        
-        let sessId = localStorage.getItem('ANYGEM_USER_ID') || "UID_" + Math.random().toString(36).substr(2, 9).toUpperCase();
-        localStorage.setItem('ANYGEM_USER_ID', sessId);
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwsng4RBCTX67my46U4fv7BhDYT0CIZt95dL7DNCFJTGUJLZFd_854vRGeUsQ1_BjG9/exec";
 
-        const chatWindow = document.getElementById('chat-window'), input = document.getElementById('user-input'), btn = document.getElementById('send-btn'), modeSelect = document.getElementById('mode-select'), pptPanel = document.getElementById('ppt-panel'), previewBar = document.getElementById('file-preview-bar');
-        let activeFile = null;
-
-        function updateUI() {
-            const m = modeSelect.value;
-            if (m === 'presentation') {
-                pptPanel.classList.add('active');
-                input.placeholder = "輸入主題以生成幾何簡報...";
-            } else if (m === 'drawing') {
-                pptPanel.classList.remove('active');
-                input.placeholder = "輸入描述或上傳圖片...";
-            } else {
-                // Chat 模式
-                pptPanel.classList.remove('active');
-                input.placeholder = "輸入問題 (支援聯網分析、多角度思辨)...";
+        marked.use({
+            renderer: {
+                link(href, title, text) {
+                    const titleAttr = title ? `title="${title}"` : '';
+                    return `<a href="${href}" ${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
+                }
             }
-            input.focus();
+        });
+
+        let currentSessionId = generateUUID();
+        let currentImageData = null, currentMimeType = null, currentDocumentText = null, currentDocumentName = null;
+        let isWaiting = false, currentRenderCode = "";
+        let abortController = null; 
+
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const sendBtnIcon = sendBtn.querySelector('.material-symbols-rounded');
+
+        function toggleSendButton(waiting) {
+            isWaiting = waiting;
+            if (waiting) {
+                sendBtnIcon.innerText = 'stop';
+                sendBtn.classList.remove('bg-white', 'text-black', 'hover:bg-gray-200');
+                sendBtn.classList.add('bg-red-500', 'text-white', 'hover:bg-red-600');
+                sendBtn.onclick = stopGeneration;
+            } else {
+                sendBtnIcon.innerText = 'send';
+                sendBtn.classList.remove('bg-red-500', 'text-white', 'hover:bg-red-600');
+                sendBtn.classList.add('bg-white', 'text-black', 'hover:bg-gray-200');
+                sendBtn.onclick = sendMessage;
+            }
+        }
+        
+        sendBtn.onclick = sendMessage;
+
+        function stopGeneration() {
+            if (abortController) {
+                abortController.abort();
+                abortController = null;
+            }
         }
 
-        async function handleSend() {
-            const text = input.value.trim(); if(!text && !activeFile) return;
-            addMessage('user', text, { fileName: activeFile?.name });
+        userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight > 240 ? 240 : this.scrollHeight) + 'px';
+        });
 
-            // 參數組裝
-            const payload = {
-                message: text, session_id: sessId, mode: modeSelect.value,
-                options: { 
-                    // PPT 參數
-                    length: document.getElementById('ppt-length').value,
-                    density: document.getElementById('ppt-density').value,
-                    theme: document.getElementById('ppt-theme').value,
-                    use_ai_image: document.getElementById('ppt-ai-img').checked
+        userInput.addEventListener('paste', function(e) {
+            if (e.clipboardData && e.clipboardData.items) {
+                const items = e.clipboardData.items;
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf('image') !== -1) {
+                        e.preventDefault(); 
+                        const file = items[i].getAsFile();
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            currentImageData = event.target.result;
+                            currentMimeType = file.type;
+                            document.getElementById('image-preview').src = currentImageData;
+                            document.getElementById('image-preview').classList.remove('hidden');
+                            document.getElementById('doc-preview').classList.add('hidden');
+                            document.getElementById('upload-preview-container').classList.remove('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                        return; 
+                    }
                 }
-            };
-
-            const tempFile = activeFile; input.value = ''; clearFile();
-            if(tempFile) {
-                setLoading(true, "Uploading...");
-                const base64 = await toBase64(tempFile);
-                payload.file_data = base64.split(',')[1];
-                payload.mime_type = tempFile.type;
             }
 
-            let loadTxt = "Thinking Deeply...";
-            if (payload.mode === 'presentation') loadTxt = "Rendering Slides...";
-            if (payload.mode === 'drawing') loadTxt = "Painting...";
+            const pasteText = (e.clipboardData || window.clipboardData).getData('text');
+            if (pasteText && pasteText.startsWith('data:image/')) {
+                e.preventDefault(); 
+                currentImageData = pasteText;
+                const mimeMatch = pasteText.match(/data:(.*?);/);
+                currentMimeType = mimeMatch ? mimeMatch[1] : 'image/png';
+                
+                document.getElementById('image-preview').src = currentImageData;
+                document.getElementById('image-preview').classList.remove('hidden');
+                document.getElementById('doc-preview').classList.add('hidden');
+                document.getElementById('upload-preview-container').classList.remove('hidden');
+            }
+        });
+
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                if (window.innerWidth < 768) return;
+                e.preventDefault();
+                if (isWaiting) stopGeneration(); 
+                else sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text && !currentImageData && !currentDocumentText) return;
+            if (isWaiting) return;
+
+            const isWebSearchEnabled = document.getElementById('web-search-toggle').checked;
+            appendMessage('user', currentDocumentName ? `📎 [文件: ${currentDocumentName}]\n${text}` : text, currentImageData);
             
-            setLoading(true, loadTxt);
+            let payloadText = text || "請分析此內容";
+            if (currentDocumentText) payloadText = `【檔案：${currentDocumentName}】\n${currentDocumentText}\n\n指令：${payloadText}`;
+
+            userInput.value = ''; userInput.style.height = 'auto';
+            const imgBase64 = currentImageData ? currentImageData.split(',')[1] : null;
+            const mime = currentMimeType;
+            clearUpload();
+
+            toggleSendButton(true); 
+            const loadingId = appendLoading();
+            
+            abortController = new AbortController(); 
 
             try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const data = await res.json();
-                if(data.status === "success") {
-                    addMessage('ai', data.reply, { model: data.model, image: data.image, mime: data.mime });
-                    fetchHistoryList();
-                } else { addMessage('ai', "🚨 Error: " + data.error); }
-            } catch (e) { addMessage('ai', "❌ 連線超時，請檢查網路後重試"); }
-            finally { setLoading(false); }
-        }
-
-        function addMessage(role, text, meta = null) {
-            const wrapper = document.createElement('div');
-            wrapper.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in mb-6`;
-            const msgBox = document.createElement('div');
-            msgBox.className = `max-w-[85%] p-4 rounded-2xl shadow-xl relative ${role === 'user' ? 'bg-emerald-700 text-white rounded-tr-none' : 'bg-[#1e293b] text-slate-200 border border-emerald-500/10 rounded-tl-none'}`;
-            
-            if(meta?.fileName) msgBox.innerHTML += `<div class="mb-2 p-2 bg-black/20 rounded-lg text-xs flex gap-2"><i class="fas fa-file"></i> ${meta.fileName}</div>`;
-            if(meta?.image) msgBox.innerHTML += `<img src="data:${meta.mime || 'image/png'};base64,${meta.image}" class="w-full rounded-xl mb-3 shadow-lg">`;
-            
-            const tNode = document.createElement('div');
-            tNode.className = "prose prose-invert prose-sm max-w-none";
-            tNode.innerHTML = marked.parse(text || "");
-            msgBox.appendChild(tNode);
-            
-            if (role === 'ai') {
-                const b = document.createElement('button');
-                b.className = "mt-4 text-[9px] font-bold bg-white/5 hover:bg-emerald-600 px-3 py-1.5 rounded-lg transition-all";
-                b.innerHTML = "📋 複製內容";
-                b.onclick = () => { navigator.clipboard.writeText(text); b.innerHTML = "✅ 已複製"; setTimeout(() => b.innerHTML = "📋 複製內容", 2000); };
-                msgBox.appendChild(b);
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        message: payloadText, session_id: currentSessionId, 
+                        file_data: imgBase64, mime_type: mime,
+                        web_search: isWebSearchEnabled 
+                    }),
+                    signal: abortController.signal
+                });
+                const data = await response.json();
+                removeLoading(loadingId);
+                if (data.status === "error") throw new Error(data.error);
+                appendMessage('ai', data.reply, data.image ? `data:${data.mime};base64,${data.image}` : null, data.model);
+                loadSessions(); 
+            } catch (err) {
+                removeLoading(loadingId);
+                if (err.name === 'AbortError') {
+                    appendMessage('ai', `🛑 **生成已手動中止。**\n您可以隨時輸入新的指令。`);
+                } else {
+                    appendMessage('ai', `❌ 執行失敗：\n\`\`\`text\n${err.message}\n\`\`\``);
+                }
+            } finally { 
+                toggleSendButton(false); 
+                abortController = null;
             }
-            wrapper.appendChild(msgBox); chatWindow.appendChild(wrapper); chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
-        document.getElementById('file-input').onchange = (e) => {
-            activeFile = e.target.files[0]; if(!activeFile) return;
-            previewBar.classList.remove('hidden');
-            document.getElementById('file-name-label').innerText = activeFile.name;
-            const thumb = document.getElementById('file-thumb');
-            if(activeFile.type.startsWith('image/')) thumb.innerHTML = `<img src="${URL.createObjectURL(activeFile)}" class="w-full h-full object-cover">`;
-            else thumb.innerHTML = `<i class="fas fa-file-alt text-lg"></i>`;
-        };
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            if (file.type.startsWith('image/')) {
+                reader.onload = (e) => {
+                    currentImageData = e.target.result; currentMimeType = file.type;
+                    document.getElementById('image-preview').src = currentImageData;
+                    document.getElementById('image-preview').classList.remove('hidden');
+                    document.getElementById('doc-preview').classList.add('hidden');
+                    document.getElementById('upload-preview-container').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else if (file.type === 'application/pdf') {
+                reader.onload = async (e) => {
+                    const pdf = await pdfjsLib.getDocument(new Uint8Array(e.target.result)).promise;
+                    let text = "";
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        text += content.items.map(s => s.str).join(' ') + "\n";
+                    }
+                    setDocPayload(file.name, text);
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                reader.onload = (e) => setDocPayload(file.name, e.target.result);
+                reader.readAsText(file);
+            }
+        }
 
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('sidebar-overlay').classList.toggle('hidden'); }
-        function newChat() { sessId = "UID_" + Date.now(); localStorage.setItem('ANYGEM_USER_ID', sessId); chatWindow.innerHTML = ''; fetchHistoryList(); }
-        async function fetchHistoryList() { const c = new AbortController(); const t = setTimeout(() => c.abort(), 8000); try { const r = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'get_session_list' }), signal: c.signal }); clearTimeout(t); const d = await r.json(); const l = document.getElementById('history-list'); l.innerHTML = ''; if(d.sessions.length === 0) { l.innerHTML = '<div class="text-center text-xs text-slate-600 mt-4">尚無紀錄</div>'; return; } d.sessions.forEach(s => { const el = document.createElement('div'); el.className = `p-3 rounded-xl text-xs flex justify-between items-center cursor-pointer hover:bg-white/5 ${s.id === sessId ? 'bg-emerald-900/40 text-white' : 'text-slate-400'}`; el.innerHTML = `<span onclick="loadSession('${s.id}')" class="truncate flex-1">${s.title}</span><i onclick="deleteChat('${s.id}')" class="fas fa-trash ml-2 opacity-50 hover:text-red-400"></i>`; l.appendChild(el); }); } catch(e){} }
-        async function loadSession(id) { sessId = id; chatWindow.innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-spin text-emerald-500"></i></div>'; const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'load_session', session_id: id }) }); const data = await res.json(); chatWindow.innerHTML=''; data.logs.forEach(l => addMessage(l.role, l.text)); }
-        async function deleteChat(id) { if(confirm("確定刪除？")) { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'delete_session', session_id: id }) }); fetchHistoryList(); } }
-        function clearFile() { activeFile = null; previewBar.classList.add('hidden'); }
-        function toBase64(f) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); }); }
-        function setLoading(l, t) { btn.disabled = l; if(l) { const d = document.createElement('div'); d.id = 'loader'; d.className = 'text-center p-4 animate-pulse text-emerald-500 text-[10px] font-black'; d.innerHTML = `<i class="fas fa-bolt"></i> ${t.toUpperCase()}`; chatWindow.appendChild(d); chatWindow.scrollTop = chatWindow.scrollHeight; } else { document.getElementById('loader')?.remove(); } }
-        updateUI(); fetchHistoryList();
+        function setDocPayload(name, text) {
+            currentDocumentName = name; currentDocumentText = text;
+            document.getElementById('doc-filename').innerText = name;
+            document.getElementById('doc-preview').classList.remove('hidden');
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('upload-preview-container').classList.remove('hidden');
+        }
+
+        function clearUpload() {
+            currentImageData = null; currentDocumentText = null; currentDocumentName = null;
+            document.getElementById('upload-preview-container').classList.add('hidden');
+            document.getElementById('file-upload').value = '';
+        }
+
+        function appendMessage(role, text, imageSrc = null, model = null) {
+            const isAI = role === 'ai';
+            const wrap = document.createElement('div');
+            wrap.className = `flex gap-3 sm:gap-4 max-w-4xl mx-auto w-full group ${!isAI ? 'flex-row-reverse' : ''}`;
+            
+            const avatar = `<div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 shadow-lg ${isAI ? 'bg-blue-600' : 'bg-gray-700'}">
+                <span class="material-symbols-rounded text-white text-[18px] sm:text-xl">${isAI ? 'smart_toy' : 'person'}</span>
+            </div>`;
+
+            let body = `<div class="flex-1 ${!isAI ? 'text-right' : ''} space-y-2 max-w-[90%] sm:max-w-[85%] relative min-w-0">`;
+            if (imageSrc) body += `<img src="${imageSrc}" class="rounded-xl border border-[#333] mb-2 max-w-full">`;
+            if (text) body += `<div class="prose prose-invert text-gray-200 bg-[#1e1f22] p-4 sm:p-5 rounded-2xl rounded-tl-none shadow-sm text-sm sm:text-base">${isAI ? marked.parse(text) : text.replace(/\n/g, '<br>')}</div>`;
+            
+            if (isAI && text) {
+                body += `<div class="flex items-center gap-2 mt-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <button class="copy-btn p-1.5 text-gray-400 hover:text-white hover:bg-[#333] rounded-md"><span class="material-symbols-rounded text-[16px] sm:text-[18px]">content_copy</span></button>
+                </div>`;
+            }
+            body += `</div>`;
+            wrap.innerHTML = avatar + body;
+            chatContainer.appendChild(wrap);
+
+            if (isAI) {
+                wrap.querySelectorAll('pre code').forEach(code => {
+                    const lang = code.className;
+                    if (lang.includes('language-html') || lang.includes('language-jsx') || lang.includes('language-javascript')) {
+                        const btn = document.createElement('button');
+                        btn.className = "absolute top-2 sm:top-3 right-2 sm:right-3 bg-blue-600 hover:bg-blue-500 text-white text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1 shadow-lg";
+                        btn.innerHTML = '<span class="material-symbols-rounded text-[12px] sm:text-sm">play_circle</span> 預覽';
+                        btn.onclick = () => openPreview(code.innerText);
+                        code.parentElement.appendChild(btn);
+                    }
+                });
+            }
+
+            if (isAI && text) {
+                const btn = wrap.querySelector('.copy-btn');
+                btn.onclick = () => {
+                    navigator.clipboard.writeText(text).then(() => {
+                        const icon = btn.querySelector('.material-symbols-rounded');
+                        icon.innerText = 'check'; icon.classList.add('text-green-400');
+                        setTimeout(() => { icon.innerText = 'content_copy'; icon.classList.remove('text-green-400'); }, 2000);
+                    });
+                };
+            }
+            scrollToBottom();
+        }
+
+        function appendLoading() {
+            const id = 'loader-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id; div.className = "flex gap-3 sm:gap-4 max-w-4xl mx-auto w-full";
+            div.innerHTML = `<div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-600 flex items-center justify-center shrink-0 animate-pulse"><span class="material-symbols-rounded text-white text-[18px] sm:text-xl">hourglass_empty</span></div>
+                <div class="pt-1.5 sm:pt-3 flex gap-2 items-center text-gray-500 text-xs sm:text-sm italic typing-indicator">代理人正忙碌中<span></span><span></span><span></span></div>`;
+            chatContainer.appendChild(div);
+            scrollToBottom();
+            return id;
+        }
+
+        function removeLoading(id) { const el = document.getElementById(id); if (el) el.remove(); }
+        function scrollToBottom() { chatContainer.scrollTop = chatContainer.scrollHeight; }
+        function generateUUID() { return 'xxxx-4xxx-yxxx'.replace(/[xy]/g, c => (c === 'x' ? (Math.random() * 16 | 0) : (Math.random() * 16 | 0 & 0x3 | 0x8)).toString(16)); }
+        
+        function toggleSidebar() { 
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full'); 
+            overlay.classList.toggle('hidden');
+        }
+        
+        function startNewSession() {
+            currentSessionId = generateUUID(); chatContainer.innerHTML = '';
+            appendMessage('ai', "您好！已為您開啟新的對話。您可以試著讓我寫代碼、製作簡報或分析文件。");
+            if (window.innerWidth < 768) toggleSidebar();
+            loadSessions();
+        }
+
+        async function switchSession(id, title) {
+            if (id === currentSessionId && chatContainer.children.length > 1) return;
+            currentSessionId = id; document.getElementById('mobile-title').innerText = title;
+            chatContainer.innerHTML = ''; const loadingId = appendLoading();
+            if (window.innerWidth < 768) toggleSidebar();
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'load_session', session_id: id }) });
+                const data = await res.json(); removeLoading(loadingId);
+                data.logs.forEach(l => appendMessage(l.role === 'ai' ? 'ai' : 'user', l.text));
+                loadSessions();
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadSessions() {
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'get_session_list' }) });
+                const data = await res.json();
+                const list = document.getElementById('session-list');
+                list.innerHTML = '';
+                data.sessions.forEach(s => {
+                    const isActive = s.id === currentSessionId;
+                    const isPinned = s.pinned;
+                    const item = document.createElement('div');
+                    item.className = `group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all ${isActive ? 'active-session' : 'text-gray-400 hover:bg-[#2a2b2f] hover:text-white'}`;
+                    const iconName = isPinned ? 'push_pin' : (isActive ? 'chat_bubble' : 'chat');
+                    item.innerHTML = `<div class="flex items-center gap-3 truncate flex-1 min-w-0">
+                        <span class="material-symbols-rounded text-lg shrink-0 ${isPinned ? 'pinned-icon' : ''}">${iconName}</span>
+                        <span class="truncate text-sm">${s.title}</span>
+                    </div>
+                    <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 shrink-0 ml-2">
+                        <button class="p-1 pin-btn ${isPinned ? 'text-blue-500' : ''}"><span class="material-symbols-rounded text-sm">push_pin</span></button>
+                        <button class="p-1 edit-btn"><span class="material-symbols-rounded text-sm">edit</span></button>
+                        <button class="p-1 del-btn hover:text-red-400"><span class="material-symbols-rounded text-sm">delete</span></button>
+                    </div>`;
+                    item.onclick = () => switchSession(s.id, s.title);
+                    item.querySelector('.pin-btn').onclick = (e) => { e.stopPropagation(); togglePinSession(s.id, isPinned); };
+                    item.querySelector('.edit-btn').onclick = (e) => { e.stopPropagation(); renameSession(s.id, s.title); };
+                    item.querySelector('.del-btn').onclick = (e) => { e.stopPropagation(); deleteSession(s.id); };
+                    list.appendChild(item);
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        async function togglePinSession(id, current) {
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'pin_session', session_id: id, is_pinned: !current }) });
+            loadSessions();
+        }
+        async function renameSession(id, old) {
+            const n = prompt("重命名對話：", old);
+            if (n && n.trim()) {
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'rename_session', session_id: id, new_title: n }) });
+                loadSessions();
+            }
+        }
+        async function deleteSession(id) {
+            if (confirm("確定要刪除嗎？")) {
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ mode: 'system', action: 'delete_session', session_id: id }) });
+                if (id === currentSessionId) startNewSession(); else loadSessions();
+            }
+        }
+
+        function openPreview(code) {
+            let renderCode = code;
+            const isReact = code.includes('export default') || code.includes('import React') || code.includes('className=');
+            const isHTML = code.trim().toLowerCase().startsWith('<!doctype html') || code.trim().toLowerCase().startsWith('<html');
+
+            if (isReact && !isHTML) {
+                let cleanedCode = code.replace(/import\s+.*?from\s+['"].*?['"];?/g, '');
+                let componentMatch = cleanedCode.match(/export\s+default\s+function\s+([A-Za-z0-9_]+)/);
+                let renderTarget = componentMatch ? componentMatch[1] : 'App';
+                cleanedCode = cleanedCode.replace(/export\s+default\s+function/g, 'function');
+
+                renderCode = `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <script src="https://unpkg.com/lucide@latest"><\/script>
+</head>
+<body class="bg-gray-50"><div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo, useCallback } = React;
+        try {
+            ${cleanedCode}
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<${renderTarget} />);
+            setTimeout(() => { if(window.lucide) window.lucide.createIcons(); }, 100);
+        } catch(err) {
+            document.getElementById('root').innerHTML = '<div class="p-4 text-red-700"><strong>渲染錯誤:</strong><br>' + err.message + '</div>';
+        }
+    <\/script>
+</body></html>`;
+            }
+            currentRenderCode = renderCode;
+            document.getElementById('preview-modal').classList.remove('hidden');
+            document.getElementById('preview-modal').classList.add('flex');
+            document.getElementById('preview-iframe').srcdoc = renderCode;
+        }
+
+        function closePreview() {
+            document.getElementById('preview-modal').classList.add('hidden');
+            document.getElementById('preview-modal').classList.remove('flex');
+            document.getElementById('preview-iframe').srcdoc = '';
+        }
+
+        function refreshPreview() {
+            if (currentRenderCode) document.getElementById('preview-iframe').srcdoc = currentRenderCode;
+        }
+
+        window.onload = loadSessions;
     </script>
 </body>
 </html>
+
+
